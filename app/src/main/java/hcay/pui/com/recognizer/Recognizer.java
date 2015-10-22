@@ -3,11 +3,12 @@ package hcay.pui.com.recognizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Recognizer {
 
     /** Number of points to use for the re-sampled path. */
-    private static final int N = 64;
+    private static final int N = 32;
     private static ArrayList<Template> templates = new ArrayList<>();
 
     public Recognizer() {
@@ -48,7 +49,11 @@ public class Recognizer {
         ))));
     }
 
-    public HashMap<Gesture, Double> recognize(ArrayList<Point> points) {
+    public ArrayList<RecognizerResult> recognize(ArrayList<Point> points) {
+        if (points.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         points = normalize(points);
         double score = Double.POSITIVE_INFINITY;
         HashMap<Gesture, Double> result = new HashMap<>();
@@ -61,7 +66,12 @@ public class Recognizer {
             }
         }
 
-        return result;
+        ArrayList<RecognizerResult> convertedResult = new ArrayList<>(result.size());
+        for (Map.Entry<Gesture, Double> r : result.entrySet()) {
+            convertedResult.add(new RecognizerResult(r.getKey(), r.getValue()));
+        }
+
+        return convertedResult;
     }
 
     private double greedyCloudMatch(ArrayList<Point> points, ArrayList<Point> templatePoints) {
@@ -127,6 +137,10 @@ public class Recognizer {
                     currentDistance += d;
                 }
             }
+        }
+
+        if (newPoints.size() < N) {
+            newPoints.add(points.get(points.size() - 1));
         }
 
         return newPoints;
