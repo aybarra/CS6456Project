@@ -1,6 +1,7 @@
 package hcay.pui.com.recognizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Recognizer {
@@ -14,7 +15,37 @@ public class Recognizer {
     }
 
     private void initializeTemplates() {
-        // TODO: create and add templates
+        Gesture t = Gesture.T;
+        templates.add(new Template(t, new ArrayList<>(Arrays.asList(
+                new Point(30,7,1),
+                new Point(103,7,1),
+                new Point(66,7,2),
+                new Point(66,87,2)
+        ))));
+
+        Gesture n = Gesture.N;
+        templates.add(new Template(n, new ArrayList<>(Arrays.asList(
+                new Point(177,92,1),new Point(177,2,1),
+                new Point(182,1,2), new Point(246,95,2),
+                new Point(247,87,3),new Point(247,1,3)
+        ))));
+
+        Gesture d = Gesture.D;
+        templates.add(new Template(d, new ArrayList<>(Arrays.asList(
+                new Point(345,9,1),new Point(345,87,1),
+                new Point(351,8,2),new Point(363,8,2),
+                new Point(372,9,2),new Point(380,11,2),
+                new Point(386,14,2),new Point(391,17,2),
+                new Point(394,22,2),new Point(397,28,2),
+                new Point(399,34,2),new Point(400,42,2),
+                new Point(400,50,2),new Point(400,56,2),
+                new Point(399,61,2),new Point(397,66,2),
+                new Point(394,70,2),new Point(391,74,2),
+                new Point(386,78,2),new Point(382,81,2),
+                new Point(377,83,2),new Point(372,85,2),
+                new Point(367,87,2),new Point(360,87,2),
+                new Point(355,88,2),new Point(349,87,2)
+        ))));
     }
 
     public HashMap<Gesture, Double> recognize(ArrayList<Point> points) {
