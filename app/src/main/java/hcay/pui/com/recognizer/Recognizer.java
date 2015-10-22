@@ -1,18 +1,67 @@
 package hcay.pui.com.recognizer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Recognizer {
 
     /** Number of points to use for the re-sampled path. */
     private static final int N = 64;
+    private static ArrayList<Template> templates = new ArrayList<>();
 
-    public ArrayList<RecognizerResult> recognize(ArrayList<Point> points) {
-        points = adjust(points);
+    public HashMap<Gesture, Double> recognize(ArrayList<Point> points) {
+        points = normalize(points);
+        double score = Double.POSITIVE_INFINITY;
+        HashMap<Gesture, Double> result = new HashMap<>();
 
-        // TODO: implement recognition routine
+        for (Template template : templates) {
+            double d = greedyCloudMatch(points, template.points);
+            if (score > d) {
+                score = d;
+                result.put(template.gesture, score);
+            }
+        }
 
-        return null;
+        return result;
+    }
+
+    private double greedyCloudMatch(ArrayList<Point> points, ArrayList<Point> templatePoints) {
+        double e = 0.50;
+        double step = Math.floor(Math.pow(N, 1 - e));
+        double min = Double.POSITIVE_INFINITY;
+
+        for (int i = 0; i < N; i += step) {
+            double d1 = cloudDistance(points, templatePoints, i);
+            double d2 = cloudDistance(templatePoints, points, i);
+            min = Math.min(min, Math.min(d1, d2));
+        }
+
+        return min;
+    }
+
+    private double cloudDistance(ArrayList<Point> points, ArrayList<Point> templatePoints, int start) {
+        boolean[] matched = new boolean[N];
+        double sum = 0;
+        int i = start;
+        do {
+            int index = -1; // ?
+            double min = Double.POSITIVE_INFINITY;
+            for (int j = 0; j < matched.length; j++) {
+                if (!matched[j]) {
+                    double d = getPointDistance(points.get(i), templatePoints.get(j));
+                    if (d < min) {
+                        min = d;
+                        index = j;
+                    }
+                }
+            }
+            matched[index] = true;
+            double weight = 1 - ((i - start + N) % N) / N;
+            sum += weight * min;
+            i = (i + 1) % N;
+        } while (i == start);
+
+        return sum;
     }
 
     private ArrayList<Point> resample(ArrayList<Point> points) {
@@ -95,7 +144,7 @@ public class Recognizer {
         return c;
     }
 
-    private ArrayList<Point> adjust(ArrayList<Point> points) {
+    private ArrayList<Point> normalize(ArrayList<Point> points) {
         return translate(scale(resample(points)));
     }
 
@@ -116,6 +165,17 @@ public class Recognizer {
             }
         }
         return distance;
+    }
+
+    private class Template {
+
+        public ArrayList<Point> points;
+        public Gesture gesture;
+
+        public Template() {
+
+        }
+
     }
 
 }
