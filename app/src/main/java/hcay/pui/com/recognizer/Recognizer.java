@@ -9,6 +9,14 @@ public class Recognizer {
     private static final int N = 64;
     private static ArrayList<Template> templates = new ArrayList<>();
 
+    public Recognizer() {
+        initializeTemplates();
+    }
+
+    private void initializeTemplates() {
+        // TODO: create and add templates
+    }
+
     public HashMap<Gesture, Double> recognize(ArrayList<Point> points) {
         points = normalize(points);
         double score = Double.POSITIVE_INFINITY;
@@ -145,7 +153,8 @@ public class Recognizer {
     }
 
     private ArrayList<Point> normalize(ArrayList<Point> points) {
-        return translate(scale(resample(points)));
+        points = resample(points);
+        return translate(scale(points));
     }
 
     private double getPointDistance(Point p1, Point p2) {
@@ -169,11 +178,12 @@ public class Recognizer {
 
     private class Template {
 
-        public ArrayList<Point> points;
         public Gesture gesture;
+        public ArrayList<Point> points;
 
-        public Template() {
-
+        public Template(Gesture gesture, ArrayList<Point> points) {
+            this.gesture = gesture;
+            this.points = normalize(points);
         }
 
     }
