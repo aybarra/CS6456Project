@@ -2,6 +2,7 @@ package hcay.pui.com.recognizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,6 +71,7 @@ public class Recognizer {
         for (Map.Entry<Gesture, Double> r : result.entrySet()) {
             convertedResult.add(new RecognizerResult(r.getKey(), r.getValue()));
         }
+        Collections.sort(convertedResult);
 
         return convertedResult;
     }
