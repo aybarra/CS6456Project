@@ -3,6 +3,7 @@ package hcay.pui.com.umlapp;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.os.Handler;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
@@ -16,9 +17,21 @@ import android.view.MotionEvent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import hcay.pui.com.recognizer.Point;
+import hcay.pui.com.recognizer.RecognizerResult;
+import hcay.pui.com.recognizer.Recognizer;
 
 /**
- * TODO: document your custom view class.
+ * @author Andy Ybarra
  */
 public class DrawingView extends View {
 
@@ -34,6 +47,19 @@ public class DrawingView extends View {
     private Bitmap canvasBitmap;
     private float brushSize, lastBrushSize;
     private boolean erase=false;
+
+    Recognizer recognizer;
+    ArrayList<Point> points;
+
+    // Distinguishes between different strokes
+    static int strokeCounter = 0;
+
+    // Timer related variables
+    Timer timer;
+    TimerTask timerTask;
+
+    final Handler handler = new Handler();
+
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -57,6 +83,9 @@ public class DrawingView extends View {
 
         brushSize = getResources().getInteger(R.integer.medium_size);
         lastBrushSize = brushSize;
+
+        recognizer = new Recognizer();
+        points = new ArrayList<Point>();
     }
 
     @Override
@@ -81,17 +110,22 @@ public class DrawingView extends View {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                // Need to check if the timer is set, if so dismiss it
+                if(timer!=null){
+                    stopTimer();
+                }
                 drawPath.moveTo(touchX, touchY);
                 break;
             case MotionEvent.ACTION_MOVE:
                 drawPath.lineTo(touchX, touchY);
+                points.add(new Point(touchX, touchY, strokeCounter));
                 break;
             case MotionEvent.ACTION_UP:
-
-                // TODO: Here pass the drawPath to the recognizer
-                // Afterwards perform whatever action the recognizer says
                 drawCanvas.drawPath(drawPath, drawPaint);
-                drawPath.reset();
+                strokeCounter++;
+
+                // set the timer for the recognizer to be called
+                startTimer();
                 break;
             default:
                 return false;
@@ -130,8 +164,7 @@ public class DrawingView extends View {
 
         if(erase) {
             drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            drawPaint.setPathEffect(new DashPathEffect(new float[] {10,10}, 5));
-//            drawCanvas.drawLine(point.x, point.y, point2.x, point2.y, drawPaint);
+//            drawPaint.setPathEffect(new DashPathEffect(new float[] {10,10}, 5));
         }
         else drawPaint.setXfermode(null);
     }
@@ -140,4 +173,52 @@ public class DrawingView extends View {
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
     }
+
+    public void initializeTimerTask(){
+        timerTask = new TimerTask(){
+            public void run(){
+                handler.post(new Runnable() {
+                    public void run(){
+                        ArrayList<RecognizerResult> results = recognizer.recognize(points);
+                        points.clear();
+                        drawPath.reset();
+                        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+                        invalidate();
+                        Toast.makeText(DrawingView.this.getContext(),
+                                "Recognizer called",
+                                Toast.LENGTH_SHORT).show();
+                        for(RecognizerResult rr: results){
+                            Toast.makeText(DrawingView.this.getContext(),
+                                    "Recognizer found" + rr.toString(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                });
+            }
+        };
+    }
+
+    public void startTimer() {
+
+        //set a new Timer
+        timer = new Timer();
+
+        //initialize the TimerTask's job
+        initializeTimerTask();
+
+        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
+        timer.schedule(timerTask, 2000); //
+    }
+
+    public void stopTimer() {
+
+        //stop the timer, if it's not already null
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
 }

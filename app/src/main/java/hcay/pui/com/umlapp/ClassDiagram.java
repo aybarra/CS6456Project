@@ -6,7 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
- * Created by andrasta on 10/24/15.
+ * @author Andy Ybarra
  */
 public class ClassDiagram extends View {
 
