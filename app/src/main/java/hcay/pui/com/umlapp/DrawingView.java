@@ -2,6 +2,7 @@ package hcay.pui.com.umlapp;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
@@ -75,7 +76,6 @@ public class DrawingView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        //detect user touch
         float touchX = event.getX();
         float touchY = event.getY();
 
@@ -87,6 +87,9 @@ public class DrawingView extends View {
                 drawPath.lineTo(touchX, touchY);
                 break;
             case MotionEvent.ACTION_UP:
+
+                // TODO: Here pass the drawPath to the recognizer
+                // Afterwards perform whatever action the recognizer says
                 drawCanvas.drawPath(drawPath, drawPaint);
                 drawPath.reset();
                 break;
@@ -125,7 +128,11 @@ public class DrawingView extends View {
         //set erase true or false
         erase=isErase;
 
-        if(erase) drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        if(erase) {
+            drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+            drawPaint.setPathEffect(new DashPathEffect(new float[] {10,10}, 5));
+//            drawCanvas.drawLine(point.x, point.y, point2.x, point2.y, drawPaint);
+        }
         else drawPaint.setXfermode(null);
     }
 
