@@ -17,7 +17,7 @@ public class RecognizerResult implements Comparable<RecognizerResult> {
 
     @Override
     public int compareTo(RecognizerResult another) {
-        return equals(another) ? 0 : (score < another.score ? 1 : (score > another.score ? -1 : 0));
+        return equals(another) ? 0 : (int) (score - another.score);
     }
 
     @Override
