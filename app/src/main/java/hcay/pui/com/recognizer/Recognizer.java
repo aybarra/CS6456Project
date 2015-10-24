@@ -208,8 +208,26 @@ public class Recognizer {
         return c;
     }
 
+    private ArrayList<Point> rotateToZero(ArrayList<Point> points) {
+        Point c = getCentroid(points);
+        double t = Math.atan2(c.y - points.get(0).y, c.x - points.get(0).x);
+        return rotateBy(points, -t);
+    }
+
+    private ArrayList<Point> rotateBy(ArrayList<Point> points, double t) {
+        ArrayList<Point> newPoints = new ArrayList<>(points.size());
+        Point c = getCentroid(points);
+        for (Point point : points) {
+            double qx = (point.x - c.x) * Math.cos(t) - (point.y - c.y) * Math.sin(t) + c.x;
+            double qy = (point.x - c.x) * Math.sin(t) + (point.y - c.y) * Math.cos(t) + c.y;
+            newPoints.add(new Point(qx, qy, point.strokeID));
+        }
+        return newPoints;
+    }
+
     private ArrayList<Point> normalize(ArrayList<Point> points) {
         points = resample(points);
+        points = rotateToZero(points);
         return translate(scale(points));
     }
 
