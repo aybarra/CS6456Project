@@ -4,10 +4,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 public class GesturePanel extends JPanel {
 
@@ -19,7 +19,7 @@ public class GesturePanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-	    		strokes.add(new Stroke(new Point2D.Double(e.getPoint().x, e.getPoint().y)));
+	    		strokes.add(new Stroke(new Point(e.getPoint().x, e.getPoint().y, strokes.size() + 1)));
                 repaint();
             }
         });
@@ -28,7 +28,7 @@ public class GesturePanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
             	Stroke currentStroke = strokes.getLast();
-            	currentStroke.addPoint(new Point2D.Double(e.getPoint().x, e.getPoint().y));
+            	currentStroke.addPoint(new Point(e.getPoint().x, e.getPoint().y, strokes.size()));
                 repaint();
             }
         });
@@ -46,20 +46,33 @@ public class GesturePanel extends JPanel {
         }
     }
 
+    public ArrayList<Point> getPoints() {
+    	ArrayList<Point> points = new ArrayList<>();
+    	for (Stroke stroke : strokes) {
+    		points.addAll(stroke.points);
+    	}
+    	return points;
+    }
+
+    public void clear() {
+    	strokes.clear();
+    	repaint();
+    }
+
 	private class Stroke {
 
-		private ArrayDeque<Point2D.Double> points;
+		private ArrayDeque<Point> points;
 
-		public Stroke(ArrayDeque<Point2D.Double> points) {
+		public Stroke(ArrayDeque<Point> points) {
 			this.points = points;
 		}
 
-		public Stroke(Point2D.Double point) {
+		public Stroke(Point point) {
 			this(new ArrayDeque<>());
 			points.add(point);
 		}
 
-		public void addPoint(Point2D.Double point) {
+		public void addPoint(Point point) {
 			points.add(point);
 		}
 
@@ -67,9 +80,9 @@ public class GesturePanel extends JPanel {
 			g2d.setColor(Color.BLACK);
 			g2d.setStroke(new BasicStroke(8));
 
-			Point2D.Double previousPoint = null;
+			Point previousPoint = null;
 
-			for (Point2D.Double point : points) {
+			for (Point point : points) {
 				if (previousPoint != null) {
 					g2d.draw(new Line2D.Double(previousPoint.x, previousPoint.y - 4, point.x, point.y - 4));
 				}
