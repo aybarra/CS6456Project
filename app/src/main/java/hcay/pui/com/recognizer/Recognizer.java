@@ -61,10 +61,12 @@ public class Recognizer {
 
         for (Template template : templates) {
             double d = greedyCloudMatch(points, template.points);
-            if (score > d) {
-                score = d;
-                result.put(template.gesture, score);
-            }
+            result.put(template.gesture, d);
+            if (score > d) score = d;
+        }
+
+        if (score == Double.POSITIVE_INFINITY) {
+            return new ArrayList<>();
         }
 
         ArrayList<RecognizerResult> convertedResult = new ArrayList<>(result.size());
@@ -91,11 +93,15 @@ public class Recognizer {
     }
 
     private double cloudDistance(ArrayList<Point> points, ArrayList<Point> templatePoints, int start) {
+        if (points.size() != templatePoints.size()) {
+            return Double.POSITIVE_INFINITY;
+        }
+
         boolean[] matched = new boolean[N];
         double sum = 0;
         int i = start;
         do {
-            int index = -1; // ?
+            int index = -1;
             double min = Double.POSITIVE_INFINITY;
             for (int j = 0; j < matched.length; j++) {
                 if (!matched[j]) {
@@ -107,10 +113,10 @@ public class Recognizer {
                 }
             }
             matched[index] = true;
-            double weight = 1 - ((i - start + N) % N) / N;
+            double weight = 1 - ((i - start + N) % N) / (double) N;
             sum += weight * min;
             i = (i + 1) % N;
-        } while (i == start);
+        } while (i != start);
 
         return sum;
     }
