@@ -32,21 +32,24 @@ public class Recognizer {
                 new Point(247,87,3),new Point(247,1,3)
         ))));
 
-        Gesture d = Gesture.D;
-        templates.add(new Template(d, new ArrayList<>(Arrays.asList(
-                new Point(345,9,1),new Point(345,87,1),
-                new Point(351,8,2),new Point(363,8,2),
-                new Point(372,9,2),new Point(380,11,2),
-                new Point(386,14,2),new Point(391,17,2),
-                new Point(394,22,2),new Point(397,28,2),
-                new Point(399,34,2),new Point(400,42,2),
-                new Point(400,50,2),new Point(400,56,2),
-                new Point(399,61,2),new Point(397,66,2),
-                new Point(394,70,2),new Point(391,74,2),
-                new Point(386,78,2),new Point(382,81,2),
-                new Point(377,83,2),new Point(372,85,2),
-                new Point(367,87,2),new Point(360,87,2),
-                new Point(355,88,2),new Point(349,87,2)
+        Gesture arrow = Gesture.ARROW;
+        templates.add(new Template(arrow, new ArrayList<>(Arrays.asList(
+                new Point(0, 50, 1), new Point(100, 50, 1), new Point(200, 50, 1),
+                new Point(150, 0, 2), new Point(200, 50, 2), new Point(150, 100, 2)
+        ))));
+
+        Gesture classifier = Gesture.CLASSIFIER;
+        templates.add(new Template(classifier, new ArrayList<>(Arrays.asList(
+                new Point(0, 0, 1), new Point(0, 400, 1),
+                new Point(0, 0, 2), new Point(200, 0, 2), new Point(200, 400, 2),
+                new Point(0, 400, 3), new Point(200, 400, 3)
+        ))));
+
+        Gesture generalization = Gesture.GENERALIZATION;
+        templates.add(new Template(generalization, new ArrayList<>(Arrays.asList(
+                new Point(0, 50, 1), new Point(100, 50, 1), new Point(200, 50, 1),
+                new Point(200, 0, 2), new Point(200, 100, 2),
+                new Point(200, 0, 3), new Point(250, 50, 3), new Point(200, 100, 3)
         ))));
     }
 
