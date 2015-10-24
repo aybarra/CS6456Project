@@ -1,6 +1,6 @@
 public enum Gesture {
 
-    T("T", false), N("N", false), D("D", false);
+    T("T", false), N("N", false), ARROW("-->", true), CLASSIFIER("CLASSIFIER", true), GENERALIZATION("--|>", true);
 
     public String name;
     public boolean isShape;
