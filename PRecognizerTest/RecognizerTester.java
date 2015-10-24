@@ -29,15 +29,14 @@ public class RecognizerTester extends JPanel {
 		JButton recognizeButton = new JButton("Recognize");
 		recognizeButton.addActionListener(e -> {
 			ArrayList<Point> points = gesturePanel.getPoints();
-			ArrayList<RecognizerResult> result = recognizer.recognize(points);
 			gesturePanel.clear();
+			ArrayList<RecognizerResult> result = recognizer.recognize(points);
+			System.out.println(result.toString());
 			if (result.isEmpty()) {
 				currentDetectedGestureLabel.setText("Failed to recognize");
-			} else if (result.size() == 1) {
+			} else {
 				RecognizerResult rr = result.get(0);
 				currentDetectedGestureLabel.setText(rr.gesture.name + String.format(" (Score: %.3f)", rr.score));
-			} else {
-				currentDetectedGestureLabel.setText(result.toString());
 			}
 		});
 
