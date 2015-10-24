@@ -1,13 +1,13 @@
-package hcay.pui.com.recognizer;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Recognizer {
 
     /** Number of points to use for the re-sampled path. */
-    private static final int N = 64;
+    private static final int N = 32;
     private static ArrayList<Template> templates = new ArrayList<>();
 
     public Recognizer() {
@@ -48,20 +48,32 @@ public class Recognizer {
         ))));
     }
 
-    public HashMap<Gesture, Double> recognize(ArrayList<Point> points) {
+    public ArrayList<RecognizerResult> recognize(ArrayList<Point> points) {
+        if (points.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         points = normalize(points);
         double score = Double.POSITIVE_INFINITY;
         HashMap<Gesture, Double> result = new HashMap<>();
 
         for (Template template : templates) {
             double d = greedyCloudMatch(points, template.points);
-            if (score > d) {
-                score = d;
-                result.put(template.gesture, score);
-            }
+            result.put(template.gesture, d);
+            if (score > d) score = d;
         }
 
-        return result;
+        if (score == Double.POSITIVE_INFINITY) {
+            return new ArrayList<>();
+        }
+
+        ArrayList<RecognizerResult> convertedResult = new ArrayList<>(result.size());
+        for (Map.Entry<Gesture, Double> r : result.entrySet()) {
+            convertedResult.add(new RecognizerResult(r.getKey(), r.getValue()));
+        }
+        Collections.sort(convertedResult);
+
+        return convertedResult;
     }
 
     private double greedyCloudMatch(ArrayList<Point> points, ArrayList<Point> templatePoints) {
@@ -79,11 +91,15 @@ public class Recognizer {
     }
 
     private double cloudDistance(ArrayList<Point> points, ArrayList<Point> templatePoints, int start) {
+        if (points.size() != templatePoints.size()) {
+            return Double.POSITIVE_INFINITY;
+        }
+
         boolean[] matched = new boolean[N];
         double sum = 0;
         int i = start;
         do {
-            int index = -1; // ?
+            int index = -1;
             double min = Double.POSITIVE_INFINITY;
             for (int j = 0; j < matched.length; j++) {
                 if (!matched[j]) {
@@ -95,10 +111,10 @@ public class Recognizer {
                 }
             }
             matched[index] = true;
-            double weight = 1 - ((i - start + N) % N) / N;
+            double weight = 1 - ((i - start + N) % N) / (double) N;
             sum += weight * min;
             i = (i + 1) % N;
-        } while (i == start);
+        } while (i != start);
 
         return sum;
     }
@@ -127,6 +143,10 @@ public class Recognizer {
                     currentDistance += d;
                 }
             }
+        }
+
+        if (newPoints.size() < N) {
+            newPoints.add(points.get(points.size() - 1));
         }
 
         return newPoints;

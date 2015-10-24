@@ -1,5 +1,3 @@
-package hcay.pui.com.recognizer;
-
 public class Point {
 
     public double x, y;
@@ -9,6 +7,11 @@ public class Point {
         this.x = x;
         this.y = y;
         this.strokeID = strokeID;
+    }
+
+    @Override
+    public String toString() {
+    	return String.format("{x=%.3f,y=%.3f,id=%d}", x, y, strokeID);
     }
 
 }
