@@ -97,7 +97,7 @@ public class Recognizer {
         for (Template template : templates) {
             double d = greedyCloudMatch(points, template.points);
             result.put(template.gesture, d);
-            if (score > d) score = d;
+            if (d < score) score = d;
         }
 
         if (score == Double.POSITIVE_INFINITY) {
@@ -106,7 +106,9 @@ public class Recognizer {
 
         ArrayList<RecognizerResult> convertedResult = new ArrayList<>(result.size());
         for (Map.Entry<Gesture, Double> r : result.entrySet()) {
-            convertedResult.add(new RecognizerResult(r.getKey(), r.getValue()));
+            if (r.getValue() - score < 0.2) {
+                convertedResult.add(new RecognizerResult(r.getKey(), r.getValue()));
+            }
         }
         Collections.sort(convertedResult);
 
