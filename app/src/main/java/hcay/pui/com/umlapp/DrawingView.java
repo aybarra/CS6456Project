@@ -1,11 +1,14 @@
 package hcay.pui.com.umlapp;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.PathEffect;
 import android.os.Handler;
-import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 
 import android.graphics.Bitmap;
@@ -17,14 +20,14 @@ import android.view.MotionEvent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.RecognizerResult;
@@ -35,6 +38,7 @@ import hcay.pui.com.recognizer.Recognizer;
  */
 public class DrawingView extends View {
 
+    private static final String TAG = "DRAWING_VIEW";
     // drawing path
     private Path drawPath;
     // drawing and canvas paint
@@ -46,7 +50,10 @@ public class DrawingView extends View {
     // canvas bitmap
     private Bitmap canvasBitmap;
     private float brushSize, lastBrushSize;
-    private boolean erase=false;
+    private boolean selectionEnabled =false;
+
+    static float phase;
+    private static PathEffect pe;
 
     Recognizer recognizer;
     ArrayList<Point> points;
@@ -86,6 +93,7 @@ public class DrawingView extends View {
 
         recognizer = new Recognizer();
         points = new ArrayList<Point>();
+
     }
 
     @Override
@@ -96,11 +104,22 @@ public class DrawingView extends View {
         drawCanvas = new Canvas(canvasBitmap);
     }
 
+    private static void makeEffect(){
+        pe = new DashPathEffect(new float[] {10, 5, 5, 5}, phase);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
+
         //draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
+
+        if(selectionEnabled){
+            makeEffect();
+            phase += 1;
+            invalidate();
+        }
     }
 
     @Override
@@ -124,8 +143,14 @@ public class DrawingView extends View {
                 drawCanvas.drawPath(drawPath, drawPaint);
                 strokeCounter++;
 
-                // set the timer for the recognizer to be called
-                startTimer();
+                // Only set the time if we're in drawing mode
+                if(!selectionEnabled){
+                    // set the timer for the recognizer to be called
+                    startTimer();
+                } else {
+                    invalidate();
+                }
+
                 break;
             default:
                 return false;
@@ -158,15 +183,22 @@ public class DrawingView extends View {
         return lastBrushSize;
     }
 
-    public void setErase(boolean isErase){
-        //set erase true or false
-        erase=isErase;
+    public void setSelectionEnabled(boolean isSelecting){
+        //set selectionEnabled true or false
+        selectionEnabled =isSelecting;
 
-        if(erase) {
-            drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-//            drawPaint.setPathEffect(new DashPathEffect(new float[] {10,10}, 5));
+        if(selectionEnabled){
+            drawPaint.setPathEffect(pe);
+        } else {
+            // Otherwise we wanna clear the drawpath
+            drawPath.reset();
+            drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         }
-        else drawPaint.setXfermode(null);
+//        if(selectionEnabled) {
+//            drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+////            drawPaint.setPathEffect(new DashPathEffect(new float[] {10,10}, 5));
+//        }
+//        else drawPaint.setXfermode(null);
     }
 
     public void startNew(){
@@ -187,14 +219,10 @@ public class DrawingView extends View {
                         Toast.makeText(DrawingView.this.getContext(),
                                 "Recognizer called",
                                 Toast.LENGTH_SHORT).show();
-                        for(RecognizerResult rr: results){
-                            Toast.makeText(DrawingView.this.getContext(),
-                                    "Recognizer found" + rr.toString(),
-                                    Toast.LENGTH_SHORT).show();
-                        }
 
+                        // Launch the dialog if there are options that are too close
+                        generateRecognizerOptionsDialog(results);
                     }
-
                 });
             }
         };
@@ -219,6 +247,47 @@ public class DrawingView extends View {
             timer.cancel();
             timer = null;
         }
+    }
+
+    public void generateRecognizerOptionsDialog(ArrayList<RecognizerResult> results){
+        final Dialog gestureDialog = new Dialog(this.getContext());
+        gestureDialog.setTitle("Clarify your gesture:");
+
+        // Gives the layout inflater
+        LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService( Context.LAYOUT_INFLATER_SERVICE);
+
+        // Gives me the layout
+        View view = inflater.inflate(R.layout.gesture_chooser, null);
+        LinearLayout ll = (LinearLayout) view.findViewById(R.id.gesture_picker_layout);
+
+        for(RecognizerResult rr: results){
+            final ImageButton rrBtn = new ImageButton(this.getContext());
+
+            // TODO: Add assets for other gestures
+            String val = rr.gesture.toString();
+            rrBtn.setImageResource(getResources().getIdentifier(val.toLowerCase(), "drawable",
+                    this.getContext().getPackageName()));
+
+            rrBtn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO: Notify the recognizer to update
+                    Log.i(TAG, "Value of view is: "+ v.toString());
+                    gestureDialog.dismiss();
+                }
+            });
+            rrBtn.setLayoutParams(new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            ll.addView(rrBtn);
+
+        }
+
+        // Do this at the end
+        gestureDialog.setContentView(view);
+
+        gestureDialog.show();
+
     }
 
 }

@@ -7,10 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.UUID;
 import android.provider.MediaStore;
 import android.app.AlertDialog;
@@ -22,7 +20,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private DrawingView drawView;
-    private ImageButton currPaint, drawBtn, eraseBtn, newBtn, saveBtn;
+    private ImageButton currPaint, drawBtn, selectionBtn, newBtn, saveBtn;
     private float smallBrush, mediumBrush, largeBrush;
 
     @Override
@@ -31,9 +29,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         drawView = (DrawingView)findViewById(R.id.drawing);
-        LinearLayout paintLayout = (LinearLayout)findViewById(R.id.paint_colors);
-        currPaint = (ImageButton)paintLayout.getChildAt(0);
-        currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
+
+//        LinearLayout paintLayout = (LinearLayout)findViewById(R.id.paint_colors);
+//        currPaint = (ImageButton)paintLayout.getChildAt(0);
+//        currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
 
         smallBrush = getResources().getInteger(R.integer.small_size);
         mediumBrush = getResources().getInteger(R.integer.medium_size);
@@ -42,10 +41,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         drawBtn = (ImageButton)findViewById(R.id.draw_btn);
 
         drawBtn.setOnClickListener(this);
-        drawView.setBrushSize(mediumBrush);
+        drawView.setBrushSize(smallBrush);
+        drawView.setColor("#FF000000");
 
-        eraseBtn = (ImageButton)findViewById(R.id.erase_btn);
-        eraseBtn.setOnClickListener(this);
+//        Paint fgPaintSel = new Paint();
+//        fgPaintSel.setARGB(255, 0, 0,0);
+//        fgPaintSel.setStyle(Style.STROKE);
+//        fgPaintSel.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
+
+        selectionBtn = (ImageButton)findViewById(R.id.selection_btn);
+        selectionBtn.setOnClickListener(this);
 
         newBtn = (ImageButton)findViewById(R.id.new_btn);
         newBtn.setOnClickListener(this);
@@ -54,9 +59,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         saveBtn.setOnClickListener(this);
     }
 
+    /**
+     * Not used anymore
+     * @param view
+     */
     public void paintClicked(View view){
 
-        drawView.setErase(false);
+        drawView.setSelectionEnabled(false);
         drawView.setBrushSize(drawView.getLastBrushSize());
 
         //use chosen color
@@ -109,7 +118,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 public void onClick(View v) {
                     drawView.setBrushSize(smallBrush);
                     drawView.setLastBrushSize(smallBrush);
-                    drawView.setErase(false);
+                    drawView.setSelectionEnabled(false);
                     brushDialog.dismiss();
                 }
             });
@@ -120,7 +129,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 public void onClick(View v) {
                     drawView.setBrushSize(mediumBrush);
                     drawView.setLastBrushSize(mediumBrush);
-                    drawView.setErase(false);
+                    drawView.setSelectionEnabled(false);
                     brushDialog.dismiss();
                 }
             });
@@ -131,47 +140,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 public void onClick(View v) {
                     drawView.setBrushSize(largeBrush);
                     drawView.setLastBrushSize(largeBrush);
-                    drawView.setErase(false);
+                    drawView.setSelectionEnabled(false);
                     brushDialog.dismiss();
                 }
             });
 
             brushDialog.show();
-        } else if(view.getId()==R.id.erase_btn){
-            //switch to erase - choose size
-            final Dialog brushDialog = new Dialog(this);
-            brushDialog.setTitle("Eraser size:");
-            brushDialog.setContentView(R.layout.brush_chooser);
+        } else if(view.getId()==R.id.selection_btn){
 
-            ImageButton smallBtn = (ImageButton)brushDialog.findViewById(R.id.small_brush);
-            smallBtn.setOnClickListener(new OnClickListener(){
-                @Override
-                public void onClick(View v) {
-                    drawView.setErase(true);
-                    drawView.setBrushSize(smallBrush);
-                    brushDialog.dismiss();
-                }
-            });
-            ImageButton mediumBtn = (ImageButton)brushDialog.findViewById(R.id.medium_brush);
-            mediumBtn.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    drawView.setErase(true);
-                    drawView.setBrushSize(mediumBrush);
-                    brushDialog.dismiss();
-                }
-            });
-            ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
-            largeBtn.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    drawView.setErase(true);
-                    drawView.setBrushSize(largeBrush);
-                    brushDialog.dismiss();
-                }
-            });
+            drawView.setSelectionEnabled(true);
+            Toast.makeText(getApplicationContext(), "Selection mode enabled", Toast.LENGTH_SHORT).show();
 
-            brushDialog.show();
         } else if(view.getId()==R.id.new_btn){
             //new button
             AlertDialog.Builder newDialog = new AlertDialog.Builder(this);
