@@ -29,9 +29,12 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import hcay.pui.com.recognizer.Gesture;
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.RecognizerResult;
 import hcay.pui.com.recognizer.Recognizer;
+import hcay.pui.com.recognizer.Template;
+import hcay.pui.com.recognizer.TemplateManager;
 
 /**
  * @author Andy Ybarra
@@ -212,16 +215,20 @@ public class DrawingView extends View {
                 handler.post(new Runnable() {
                     public void run(){
                         ArrayList<RecognizerResult> results = recognizer.recognize(points);
+                        ArrayList<Point>tempPoints = new ArrayList<Point>();
+                        tempPoints.addAll(points);
                         points.clear();
                         drawPath.reset();
                         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
                         invalidate();
-                        Toast.makeText(DrawingView.this.getContext(),
-                                "Recognizer called",
-                                Toast.LENGTH_SHORT).show();
-
-                        // Launch the dialog if there are options that are too close
-                        generateRecognizerOptionsDialog(results);
+                        if(results.size() > 1){
+                            // Launch the dialog if there are options that are too close
+                            generateRecognizerOptionsDialog(results, tempPoints);
+                        } else if(results.size() ==1){
+                            Toast.makeText(DrawingView.this.getContext(),
+                                    "Results were size 1, gesture="+ results.get(0).gesture.toString(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }
@@ -249,7 +256,7 @@ public class DrawingView extends View {
         }
     }
 
-    public void generateRecognizerOptionsDialog(ArrayList<RecognizerResult> results){
+    public void generateRecognizerOptionsDialog(ArrayList<RecognizerResult> results, final ArrayList<Point>points){
         final Dialog gestureDialog = new Dialog(this.getContext());
         gestureDialog.setTitle("Clarify your gesture:");
 
@@ -262,17 +269,19 @@ public class DrawingView extends View {
 
         for(RecognizerResult rr: results){
             final ImageButton rrBtn = new ImageButton(this.getContext());
-
+            final Gesture tempGesture = rr.gesture;
             // TODO: Add assets for other gestures
             String val = rr.gesture.toString();
+            // TODO: Change this to use mipmap
             rrBtn.setImageResource(getResources().getIdentifier(val.toLowerCase(), "drawable",
                     this.getContext().getPackageName()));
 
             rrBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: Notify the recognizer to update
-                    Log.i(TAG, "Value of view is: "+ v.toString());
+                    // Notify the templateManager to update based on the user's selection
+                    TemplateManager.addNewTemplate(tempGesture, points);
+                    TemplateManager.save();
                     gestureDialog.dismiss();
                 }
             });

@@ -17,6 +17,8 @@ import android.content.DialogInterface;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
+import hcay.pui.com.recognizer.TemplateManager;
+
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private DrawingView drawView;
@@ -57,6 +59,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         saveBtn = (ImageButton)findViewById(R.id.save_btn);
         saveBtn.setOnClickListener(this);
+
+        TemplateManager.initialize(getApplicationContext());
     }
 
     /**
@@ -107,45 +111,47 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if(view.getId()==R.id.draw_btn){
+
+            drawView.setSelectionEnabled(false);
             //draw button clicked
-            final Dialog brushDialog = new Dialog(this);
-            brushDialog.setTitle("Brush size:");
-            brushDialog.setContentView(R.layout.brush_chooser);
-
-            ImageButton smallBtn = (ImageButton)brushDialog.findViewById(R.id.small_brush);
-            smallBtn.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    drawView.setBrushSize(smallBrush);
-                    drawView.setLastBrushSize(smallBrush);
-                    drawView.setSelectionEnabled(false);
-                    brushDialog.dismiss();
-                }
-            });
-
-            ImageButton mediumBtn = (ImageButton)brushDialog.findViewById(R.id.medium_brush);
-            mediumBtn.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    drawView.setBrushSize(mediumBrush);
-                    drawView.setLastBrushSize(mediumBrush);
-                    drawView.setSelectionEnabled(false);
-                    brushDialog.dismiss();
-                }
-            });
-
-            ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
-            largeBtn.setOnClickListener(new OnClickListener(){
-                @Override
-                public void onClick(View v) {
-                    drawView.setBrushSize(largeBrush);
-                    drawView.setLastBrushSize(largeBrush);
-                    drawView.setSelectionEnabled(false);
-                    brushDialog.dismiss();
-                }
-            });
-
-            brushDialog.show();
+//            final Dialog brushDialog = new Dialog(this);
+//            brushDialog.setTitle("Brush size:");
+//            brushDialog.setContentView(R.layout.brush_chooser);
+//
+//            ImageButton smallBtn = (ImageButton)brushDialog.findViewById(R.id.small_brush);
+//            smallBtn.setOnClickListener(new OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    drawView.setBrushSize(smallBrush);
+//                    drawView.setLastBrushSize(smallBrush);
+//                    drawView.setSelectionEnabled(false);
+//                    brushDialog.dismiss();
+//                }
+//            });
+//
+//            ImageButton mediumBtn = (ImageButton)brushDialog.findViewById(R.id.medium_brush);
+//            mediumBtn.setOnClickListener(new OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    drawView.setBrushSize(mediumBrush);
+//                    drawView.setLastBrushSize(mediumBrush);
+//                    drawView.setSelectionEnabled(false);
+//                    brushDialog.dismiss();
+//                }
+//            });
+//
+//            ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
+//            largeBtn.setOnClickListener(new OnClickListener(){
+//                @Override
+//                public void onClick(View v) {
+//                    drawView.setBrushSize(largeBrush);
+//                    drawView.setLastBrushSize(largeBrush);
+//                    drawView.setSelectionEnabled(false);
+//                    brushDialog.dismiss();
+//                }
+//            });
+//
+//            brushDialog.show();
         } else if(view.getId()==R.id.selection_btn){
 
             drawView.setSelectionEnabled(true);

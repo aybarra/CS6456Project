@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import java.awt.Dimension;
-
 public class Recognizer {
 
     /** Number of points to use for the re-sampled path. */
@@ -32,7 +30,7 @@ public class Recognizer {
             return new ArrayList<>();
         }
 
-        Dimension drawingSize = getSize(points);
+        Size drawingSize = getSize(points);
         ArrayList<RecognizerResult> convertedResult = new ArrayList<>(result.size());
         for (Map.Entry<Gesture, Double> r : result.entrySet()) {
             if (r.getValue() - score < 0.2) {
@@ -44,7 +42,7 @@ public class Recognizer {
         return convertedResult;
     }
 
-    private static Dimension getSize(ArrayList<Point> points) {
+    private static Size getSize(ArrayList<Point> points) {
         double minX, minY, maxX, maxY;
         minX = minY = Double.POSITIVE_INFINITY;
         maxX = maxY = Double.NEGATIVE_INFINITY;
@@ -56,7 +54,7 @@ public class Recognizer {
             maxY = Math.max(maxY, p.y);
         }
 
-        return new Dimension((int) (maxX - minX + 1), (int) (maxY - minY + 1));
+        return new Size((int) (maxX - minX + 1), (int) (maxY - minY + 1));
     }
 
     private static double greedyCloudMatch(ArrayList<Point> points, ArrayList<Point> templatePoints) {

@@ -1,5 +1,11 @@
 package hcay.pui.com.recognizer;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import java.io.FileNotFoundException;
@@ -14,16 +20,26 @@ import com.google.gson.*;
 
 public class TemplateManager {
 
-	private static final String TEMPLATE_FILE_PATH = "templates.g";
+	private static String templateFilePath;
 	private static final Gson GSON = new Gson();
 
-	public static ArrayList<Template> templates = load();
+	public static ArrayList<Template> templates = new ArrayList<>();
 
 	private static boolean changed = false;
 
+	private static AssetManager assetManager;
+
+	public static void initialize(Context context) {
+//		templateFilePath
+		//.open("templates.g");
+		assetManager = context.getAssets();
+		templates = load();
+	}
+
 	public static ArrayList<Template> load() {
 		try {
-			FileReader reader = new FileReader(TEMPLATE_FILE_PATH);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open("templates.g")));
+
 			Type listType = new TypeToken<ArrayList<Template>>(){}.getType();
 			ArrayList<Template> t = GSON.fromJson(reader, listType);
 
@@ -36,7 +52,7 @@ public class TemplateManager {
 
 			if (changed) saveTemplates(t);
 			return t;
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			return new ArrayList<>();
 		}
 	}
@@ -59,7 +75,7 @@ public class TemplateManager {
 
 	private static void saveTemplates(ArrayList<Template> templates) {
 		try {
-			FileWriter writer = new FileWriter(TEMPLATE_FILE_PATH);
+			FileWriter writer = new FileWriter(templateFilePath);
 			// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			GSON.toJson(templates, writer);
 			writer.close();
