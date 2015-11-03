@@ -11,8 +11,6 @@ public class RecognizerTester extends JPanel {
 	public RecognizerTester() {
 		super(new BorderLayout());
 
-		Recognizer.initializeTemplates();
-
 		GesturePanel gesturePanel = new GesturePanel();
 		add(gesturePanel, BorderLayout.CENTER);
 
@@ -29,7 +27,7 @@ public class RecognizerTester extends JPanel {
 		JButton recognizeButton = new JButton("Recognize");
 		recognizeButton.addActionListener(e -> {
 			ArrayList<Point> points = gesturePanel.getPoints();
-			System.out.println("Points: " + points);
+			// System.out.println("Points: " + points);
 			gesturePanel.clear();
 			ArrayList<RecognizerResult> result = Recognizer.recognize(points);
 			System.out.println(result.toString());
