@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.awt.Dimension;
+
 public class Recognizer {
 
     /** Number of points to use for the re-sampled path. */
@@ -90,12 +92,12 @@ public class Recognizer {
             return new ArrayList<>();
         }
 
-        points = normalize(points);
+        ArrayList<Point> normalizedPoints = normalize(points);
         double score = Double.POSITIVE_INFINITY;
         HashMap<Gesture, Double> result = new HashMap<>();
 
         for (Template template : templates) {
-            double d = greedyCloudMatch(points, template.points);
+            double d = greedyCloudMatch(normalizedPoints, template.points);
             result.put(template.gesture, d);
             if (d < score) score = d;
         }
@@ -104,15 +106,31 @@ public class Recognizer {
             return new ArrayList<>();
         }
 
+        Dimension drawingSize = getSize(points);
         ArrayList<RecognizerResult> convertedResult = new ArrayList<>(result.size());
         for (Map.Entry<Gesture, Double> r : result.entrySet()) {
             if (r.getValue() - score < 0.2) {
-                convertedResult.add(new RecognizerResult(r.getKey(), r.getValue()));
+                convertedResult.add(new RecognizerResult(r.getKey(), r.getValue(), drawingSize));
             }
         }
         Collections.sort(convertedResult);
 
         return convertedResult;
+    }
+
+    private static Dimension getSize(ArrayList<Point> points) {
+        double minX, minY, maxX, maxY;
+        minX = minY = Double.POSITIVE_INFINITY;
+        maxX = maxY = Double.NEGATIVE_INFINITY;
+
+        for (Point p : points) {
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+        }
+
+        return new Dimension((int) (maxX - minX + 1), (int) (maxY - minY + 1));
     }
 
     private static double greedyCloudMatch(ArrayList<Point> points, ArrayList<Point> templatePoints) {
