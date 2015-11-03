@@ -1,6 +1,8 @@
 public enum Gesture {
 
-    T("T", false), N("N", false), ARROW("-->", true), CLASSIFIER("CLASSIFIER", true), GENERALIZATION("--|>", true);
+    NAVIGABLE("-->", true), BI_NAVIGABLE("<->", true), CLASSIFIER("[]", true), GENERALIZATION("--|>", true),
+    UNSPECIFIED("---", true), NON_NAVIGABLE("x", true), REALIZATION_CIRCLE("o", true), REALIZATION("o--", true), AGGREGATION("<>-", true),
+    COMPOSITION("</>-", true), DEPENDENCY("- ->", true), REALIZATION_DEPENDENCY("- -|>", true), REQUIRED("--C", true);
 
     public String name;
     public boolean isShape;
