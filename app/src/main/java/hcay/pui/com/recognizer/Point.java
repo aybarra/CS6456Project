@@ -11,4 +11,9 @@ public class Point {
         this.strokeID = strokeID;
     }
 
+    @Override
+    public String toString() {
+    	return String.format("{x=%.3f,y=%.3f,id=%d}", x, y, strokeID);
+    }
+
 }

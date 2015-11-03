@@ -1,13 +1,17 @@
 package hcay.pui.com.recognizer;
 
+import java.awt.Dimension;
+
 public class RecognizerResult implements Comparable<RecognizerResult> {
 
     public Gesture gesture;
     public double score;
+    public Dimension size;
 
-    public RecognizerResult(Gesture gesture, double score) {
+    public RecognizerResult(Gesture gesture, double score, Dimension size) {
         this.gesture = gesture;
         this.score = score;
+        this.size = size;
     }
 
     @Override
