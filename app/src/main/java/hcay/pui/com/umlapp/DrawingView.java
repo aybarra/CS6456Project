@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
 import android.os.Handler;
+import android.text.Layout;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,13 +35,15 @@ import hcay.pui.com.recognizer.Gesture;
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.RecognizerResult;
 import hcay.pui.com.recognizer.Recognizer;
+import hcay.pui.com.recognizer.Size;
 import hcay.pui.com.recognizer.Template;
 import hcay.pui.com.recognizer.TemplateManager;
 
+import android.widget.LinearLayout.LayoutParams;
 /**
  * @author Andy Ybarra
  */
-public class DrawingView extends View {
+public class DrawingView extends ViewGroup {
 
     private static final String TAG = "DRAWING_VIEW";
     // drawing path
@@ -70,10 +74,18 @@ public class DrawingView extends View {
 
     final Handler handler = new Handler();
 
+    private List<View> umlObjects;
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing();
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        for(int i = 0; i < this.getChildCount(); i++){
+            getChildAt(i).layout(l,t,r,b);
+        }
     }
 
     private void setupDrawing(){
@@ -97,6 +109,7 @@ public class DrawingView extends View {
         recognizer = new Recognizer();
         points = new ArrayList<Point>();
 
+        umlObjects = new ArrayList<View>();
     }
 
     @Override
@@ -214,6 +227,7 @@ public class DrawingView extends View {
             public void run(){
                 handler.post(new Runnable() {
                     public void run(){
+                        Point first = points.get(0);
                         ArrayList<RecognizerResult> results = recognizer.recognize(points);
                         ArrayList<Point>tempPoints = new ArrayList<Point>();
                         tempPoints.addAll(points);
@@ -225,6 +239,26 @@ public class DrawingView extends View {
                             // Launch the dialog if there are options that are too close
                             generateRecognizerOptionsDialog(results, tempPoints);
                         } else if(results.size() ==1){
+
+                            if(results.get(0).gesture.name.equals("[]")) {
+                                Size tempSize = results.get(0).size;
+                                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+                                ClassDiagramView v = new ClassDiagramView(DrawingView.this.getContext(), tempSize.getWidth(), tempSize.getHeight());
+//                                v.setLayoutParams(new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
+
+//                                ClassDiagram v = new ClassDiagram(DrawingView.this.getContext());
+                                LayoutParams params = new LayoutParams(
+                                        LayoutParams.WRAP_CONTENT,
+                                        LayoutParams.WRAP_CONTENT);
+                                v.setX((float) first.x);
+                                v.setY((float) first.y);
+//                                umlObjects.add(v);
+                                DrawingView.this.addView(v, params);
+                                Log.i(TAG, "Number of children viewgroup has is: "+ getChildCount()
+                                         + " visibility of object is: "+v.getVisibility()
+                                         + " size is: " + v.getLayoutParams().toString());
+                            }
                             Toast.makeText(DrawingView.this.getContext(),
                                     "Results were size 1, gesture="+ results.get(0).gesture.toString(),
                                     Toast.LENGTH_SHORT).show();
@@ -298,5 +332,4 @@ public class DrawingView extends View {
         gestureDialog.show();
 
     }
-
 }
