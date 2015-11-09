@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/customborder">
 
     <FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
 
         <at.markushi.ui.CircleButton
             android:layout_width="64dip"
@@ -15,11 +17,10 @@
             android:src="@drawable/arrow"
             app:cb_color="#6ed9f3"
             app:cb_pressedRingWidth="8dip" />
-
     </FrameLayout>
 
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
         android:layout_gravity="center_horizontal"
@@ -35,14 +36,21 @@
         android:layout_gravity="center_horizontal" />
 
     <ListView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/propertiesListView"
         android:layout_gravity="center_horizontal"
         android:layout_weight=".333" />
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Member"
+        android:id="@+id/button" />
+
     <View
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="2dip"
         android:background="#000000" />
     <ListView
@@ -50,4 +58,11 @@
         android:layout_height="wrap_content"
         android:id="@+id/methodsListView"
         android:layout_weight=".333" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Method"
+        android:id="@+id/addMethodbutton" />
 </LinearLayout>

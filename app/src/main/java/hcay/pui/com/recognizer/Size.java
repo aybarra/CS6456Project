@@ -7,7 +7,7 @@ public class Size {
     private int width;
     private int height;
 
-    public Size(int height, int width){
+    public Size(int width, int height){
         this.height = height;
         this.width = width;
     }

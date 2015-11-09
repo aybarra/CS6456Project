@@ -4,16 +4,18 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 
 /**
  * @author Andy Ybarra
+ * Uses layout to draw view
  */
 public class ClassDiagram extends View {
 
-    private static Paint paint;
+    private final String TAG = "CLASS_DIAGRAM";
 
     public ClassDiagram(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -21,16 +23,11 @@ public class ClassDiagram extends View {
 
     public ClassDiagram(Context context){
         super(context);
-
-        paint = new Paint();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
-//        int height = this.getMeasuredHeight();
-//        int width = this.getMeasuredWidth();
     }
 
     @Override
@@ -41,6 +38,7 @@ public class ClassDiagram extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.i(TAG, "Measurespec is: " + widthMeasureSpec + "," + heightMeasureSpec);
     }
 
     @Override

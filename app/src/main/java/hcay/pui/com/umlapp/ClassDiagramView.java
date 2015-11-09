@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 /**
  * Created by andrasta on 11/8/15.
+ * Uses Canvas to draw
  */
 public class ClassDiagramView extends View {
 
