@@ -267,7 +267,7 @@ public class DrawingView extends ViewGroup {
                             // Launch the dialog if there are options that are too close
                             generateRecognizerOptionsDialog(results, tempPoints);
                         } else if(results.size() ==1){
-                            if(results.get(0).gesture.name.equals("[]")) {
+                            if(results.get(0).gesture == Gesture.CLASSIFIER) {
                                 Size tempSize = results.get(0).size;
                                 ClassDiagram view = (ClassDiagram) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
                                 view.init(DrawingView.this.getContext());
@@ -277,6 +277,10 @@ public class DrawingView extends ViewGroup {
                             }
                             Toast.makeText(DrawingView.this.getContext(),
                                     "Results were size 1, gesture="+ results.get(0).gesture.toString(),
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(DrawingView.this.getContext(),
+                                    "No result",
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -332,10 +336,7 @@ public class DrawingView extends ViewGroup {
         for(RecognizerResult rr: results){
             final ImageButton rrBtn = new ImageButton(this.getContext());
             final Gesture tempGesture = rr.gesture;
-            // TODO: Add assets for other gestures
-            String val = rr.gesture.toString();
-            // TODO: Change this to use mipmap
-            rrBtn.setImageResource(getResources().getIdentifier(val.toLowerCase(), "drawable",
+            rrBtn.setImageResource(getResources().getIdentifier(rr.gesture.imageName, "drawable",
                     this.getContext().getPackageName()));
 
             rrBtn.setOnClickListener(new OnClickListener() {
