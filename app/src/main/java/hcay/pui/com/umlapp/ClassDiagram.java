@@ -34,16 +34,18 @@ public class ClassDiagram extends LinearLayout {
     public void init(Context context){
         ListView memberListView = (ListView)findViewById(R.id.memberListView);
         Log.i(TAG, "MemberListView is null is: " + (memberListView == null));
-        MemberAdapter adapter = new MemberAdapter(context, new ArrayList<Member>());
+        final MemberAdapter adapter = new MemberAdapter(context, new ArrayList<Member>());
         memberListView.setAdapter(adapter);
-//
-//        Button addMember = (Button)findViewById(R.id.addMemberBtn);
-//        addMember.setOnClickListener(new OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                adapter.addItem("");
-//            }
-//        });
+
+        Button addMember = (Button)findViewById(R.id.addMemberBtn);
+        addMember.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG+"_addMember", "Add Member clicked");
+                adapter.addItem("");
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override

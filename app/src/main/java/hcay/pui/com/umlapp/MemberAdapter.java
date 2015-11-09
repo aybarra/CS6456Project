@@ -9,7 +9,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.util.List;
+
+import hcay.pui.com.recognizer.Template;
 
 /**
  * Created by andrasta on 11/8/15.
@@ -26,9 +29,8 @@ public class MemberAdapter extends ArrayAdapter<Member> {
 
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        View v = convertView;
-
-        MemberHolder holder = new MemberHolder();
+//        View v = convertView;
+        MemberHolder holder;
 
         // First let's verify the convertView is not null
         if (convertView == null) {
@@ -42,31 +44,16 @@ public class MemberAdapter extends ArrayAdapter<Member> {
             Button save = (Button) convertView.findViewById(R.id.saveMemberBtn);
             Button remove = (Button) convertView.findViewById(R.id.removeMemberBtn);
 
-            holder.editMemberNameView = editMemberName;
-            holder.memberNameView = memberName;
-            holder.saveBtn = save;
-            holder.removeBtn = remove;
-            v.setTag(holder);
+            holder = new MemberHolder(editMemberName, memberName, save, remove);
+            convertView.setTag(holder);
 
         } else
-            holder = (MemberHolder) v.getTag();
+            holder = (MemberHolder) convertView.getTag();
+
+        holder.saveBtn.setTag(position);
 
         Member member = memberList.get(position);
-
         holder.editMemberNameView.setText(member.getMemberName());
-//        holder.saveBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                holder.memberNameView.setText(holder.editMemberNameView.getText());
-//            }
-//        });
-
-//        holder.removeBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                memberList.remove(member);
-//            }
-//        });
 
         return convertView;
     }
@@ -80,6 +67,33 @@ public class MemberAdapter extends ArrayAdapter<Member> {
         public TextView memberNameView;
         public Button saveBtn;
         public Button removeBtn;
+
+        public MemberHolder(EditText edit, TextView label, Button save, Button remove){
+            editMemberNameView = edit;
+            memberNameView = label;
+            saveBtn = save;
+            save.setOnClickListener(mSaveClickListener);
+            removeBtn = remove;
+        }
+
+        // Prevents us from having to create a listener every time get view is called
+        // Cited from here:
+        // http://scottweber.com/2013/04/30/adding-click-listeners-to-views-in-adapters/
+        private View.OnClickListener mSaveClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveBtn.setVisibility(View.GONE);
+
+                String text = editMemberNameView.getText().toString();
+                editMemberNameView.setVisibility(View.GONE);
+
+                memberNameView.setVisibility(View.VISIBLE);
+                memberNameView.setText(text);
+            }
+        };
+
+
+
     }
 }
 
