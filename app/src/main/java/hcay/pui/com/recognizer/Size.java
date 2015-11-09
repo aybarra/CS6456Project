@@ -7,9 +7,9 @@ public class Size {
     private int width;
     private int height;
 
-    public Size(int width, int height){
-        this.height = height;
+    public Size(int width, int height) {
         this.width = width;
+        this.height = height;
     }
 
     public int getWidth(){

@@ -8,12 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
 
 /**
  * @author Andy Ybarra
  * Uses layout to draw view
  */
-public class ClassDiagram extends View {
+public class ClassDiagram extends LinearLayout {
 
     private final String TAG = "CLASS_DIAGRAM";
 

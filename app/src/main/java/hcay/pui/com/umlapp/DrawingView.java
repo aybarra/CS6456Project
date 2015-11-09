@@ -8,7 +8,6 @@ import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
 import android.graphics.Rect;
 import android.os.Handler;
-import android.text.Layout;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,7 +21,6 @@ import android.graphics.Path;
 import android.view.MotionEvent;
 
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -40,10 +38,8 @@ import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.RecognizerResult;
 import hcay.pui.com.recognizer.Recognizer;
 import hcay.pui.com.recognizer.Size;
-import hcay.pui.com.recognizer.Template;
 import hcay.pui.com.recognizer.TemplateManager;
 
-import android.widget.LinearLayout.LayoutParams;
 /**
  * @author Andy Ybarra
  */
@@ -96,96 +92,21 @@ public class DrawingView extends ViewGroup {
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int count = this.getChildCount();
-        int curWidth, curHeight, curLeft, curTop, maxHeight;
-
-        Log.i(TAG, "left, top, right, bottom: " + left + "," + top + "," + right + "," + bottom);
-        //get the available size of child view
-        int childLeft = this.getPaddingLeft();
-        int childTop = this.getPaddingTop();
-        int childRight = this.getMeasuredWidth() - this.getPaddingRight();
-        int childBottom = this.getMeasuredHeight() - this.getPaddingBottom();
-        int childWidth = childRight - childLeft;
-        int childHeight = childBottom - childTop;
-
-        maxHeight = 0;
-        curLeft = childLeft;
-        curTop = childTop;
-
-        for (int i = 0; i < count; i++) {
-            final View child = getChildAt(i);
-            if (child.getVisibility() == View.GONE) {
-                continue;
-            }
-//            Log.i(TAG, "ChildWidth is: " + childWidth);
-            child.measure(MeasureSpec.makeMeasureSpec(child.getLayoutParams().width, MeasureSpec.AT_MOST),
-                    MeasureSpec.makeMeasureSpec(child.getLayoutParams().height, MeasureSpec.AT_MOST));
-            curWidth = child.getMeasuredWidth();
-            curHeight = child.getMeasuredHeight();
-            //wrap is reach to the end
-//            if (curLeft + curWidth >= childRight) {
-//                curLeft = childLeft;
-//                curTop += maxHeight;
-//                maxHeight = 0;
-//            }
-            //do the layout
-//            child.layout(curLeft, curTop, curLeft + curWidth, curTop + curHeight);
-            int childsLeft = (int)child.getX();
-            int childsTop = (int)child.getY();
-            int childsWidth = childsLeft + child.getLayoutParams().width;
-            int childsHeight = childsTop + child.getLayoutParams().height;
-
-            Log.i(TAG, "left, top, width, height: "+ childsLeft+","+childsTop+","+childsWidth+","+childsHeight);
-            child.layout(childsLeft, childsTop, childsWidth, childsHeight);
-//            //store the max height
-//            if (maxHeight < curHeight)
-//                maxHeight = curHeight;
-//            curLeft += curWidth;
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        for(int i = 0; i < this.getChildCount(); i++){
+            getChildAt(i).layout(l, t, r, b);
         }
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        int desiredWidth = 100;
-        int desiredHeight = 100;
-
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        Log.i(TAG, "Width size is: " + widthSize);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-        int width;
-        int height;
-
-        //Measure Width
-        if (widthMode == MeasureSpec.EXACTLY) {
-            //Must be this size
-            width = widthSize;
-        } else if (widthMode == MeasureSpec.AT_MOST) {
-            //Can't be bigger than...
-            width = Math.min(desiredWidth, widthSize);
-        } else {
-            //Be whatever you want
-            width = desiredWidth;
+        setMeasuredDimension(getMeasuredWidth(), getMeasuredHeight());
+        for (int i = 0; i < getChildCount(); i++) {
+            View childView = getChildAt(i);
+            measureChild(childView, widthMeasureSpec, heightMeasureSpec);
         }
-
-        //Measure Height
-        if (heightMode == MeasureSpec.EXACTLY) {
-            //Must be this size
-            height = heightSize;
-        } else if (heightMode == MeasureSpec.AT_MOST) {
-            //Can't be bigger than...
-            height = Math.min(desiredHeight, heightSize);
-        } else {
-            //Be whatever you want
-            height = desiredHeight;
-        }
-
-        //MUST CALL THIS
-        setMeasuredDimension(width, height);
     }
 
     private void setupDrawing(){
@@ -333,13 +254,10 @@ public class DrawingView extends ViewGroup {
             public void run(){
                 handler.post(new Runnable() {
                     public void run(){
-                        Point first;
-                        if(points == null || points.isEmpty()) {
-                            return;
-                        }
-                        first = fetchLeftMost();
-                        ArrayList<RecognizerResult> results = recognizer.recognize(points);
-                        ArrayList<Point>tempPoints = new ArrayList<Point>();
+                        if (points == null || points.isEmpty()) return;
+                        Point first = points.get(0);
+                        ArrayList<RecognizerResult> results = Recognizer.recognize(points);
+                        ArrayList<Point>tempPoints = new ArrayList<>();
                         tempPoints.addAll(points);
                         points.clear();
                         drawPath.reset();
@@ -349,32 +267,12 @@ public class DrawingView extends ViewGroup {
                             // Launch the dialog if there are options that are too close
                             generateRecognizerOptionsDialog(results, tempPoints);
                         } else if(results.size() ==1){
-
                             if(results.get(0).gesture.name.equals("[]")) {
                                 Size tempSize = results.get(0).size;
-                                Log.i(TAG, "Size is: "+ tempSize.getWidth()+","+tempSize.getHeight());
-                                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-//                                LinearLayout parent = (LinearLayout)vi.inflate(R.layout.activity_main, null);
-//                                DrawingView parent = (DrawingView)findViewById(R.id.drawing);
-                                LinearLayout view = (LinearLayout)vi.inflate(R.layout.class_diagram_layout, null);
-
-                                DrawingView parent = (DrawingView)DrawingView.this.findViewById(R.id.drawing);
-
-                                LayoutParams params = new LayoutParams(
-                                        tempSize.getWidth(),
-                                        tempSize.getHeight());
+                                ClassDiagram view = (ClassDiagram) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
                                 view.setX((float) first.x);
                                 view.setY((float) first.y);
-//
-//                                v.measure(tempSize.getWidth(), tempSize.getHeight());
-//                                v.layout(0,0,tempSize.getWidth(),tempSize.getHeight());
-//                                v.draw(DrawingView.this.drawCanvas);
-
-                                // TODO: Add the object to a list we manage so we can save/reload
-                                parent.addView(view, params);
-                                Toast.makeText(DrawingView.this.getContext(), "Number of children viewgroup has is: "+ getChildCount()
-                                         + " size is: " + view.getLayoutParams().width+","+view.getLayoutParams().height, Toast.LENGTH_LONG).show();
+                                DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
                             }
                             Toast.makeText(DrawingView.this.getContext(),
                                     "Results were size 1, gesture="+ results.get(0).gesture.toString(),
