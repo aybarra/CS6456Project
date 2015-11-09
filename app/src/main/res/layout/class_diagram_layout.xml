@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<hcay.pui.com.umlapp.ClassDiagram xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
 
     <FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
 
         <at.markushi.ui.CircleButton
             android:layout_width="64dip"
@@ -22,9 +22,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
-        android:layout_gravity="center_horizontal"
         android:text="&lt;Class Name>"
-        android:textAlignment="center" />
+        android:inputType="text" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -38,11 +37,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/propertiesListView"
-        android:layout_gravity="center_horizontal"
         android:layout_weight=".333" />
 
     <View
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="2dip"
         android:background="#000000" />
     <ListView
@@ -50,4 +48,4 @@
         android:layout_height="wrap_content"
         android:id="@+id/methodsListView"
         android:layout_weight=".333" />
-</LinearLayout>
+</hcay.pui.com.umlapp.ClassDiagram>

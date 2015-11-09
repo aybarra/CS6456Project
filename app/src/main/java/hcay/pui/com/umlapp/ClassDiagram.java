@@ -7,11 +7,12 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
 
 /**
  * @author Andy Ybarra
  */
-public class ClassDiagram extends View {
+public class ClassDiagram extends LinearLayout {
 
     private static Paint paint;
 
@@ -22,7 +23,7 @@ public class ClassDiagram extends View {
     public ClassDiagram(Context context){
         super(context);
 
-        paint = new Paint();
+//        paint = new Paint();
     }
 
     @Override

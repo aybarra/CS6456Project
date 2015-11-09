@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
 import android.os.Handler;
-import android.text.Layout;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,7 +18,6 @@ import android.graphics.Path;
 import android.view.MotionEvent;
 
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -36,10 +34,8 @@ import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.RecognizerResult;
 import hcay.pui.com.recognizer.Recognizer;
 import hcay.pui.com.recognizer.Size;
-import hcay.pui.com.recognizer.Template;
 import hcay.pui.com.recognizer.TemplateManager;
 
-import android.widget.LinearLayout.LayoutParams;
 /**
  * @author Andy Ybarra
  */
@@ -84,7 +80,18 @@ public class DrawingView extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         for(int i = 0; i < this.getChildCount(); i++){
-            getChildAt(i).layout(l,t,r,b);
+            getChildAt(i).layout(l, t, r, b);
+        }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        setMeasuredDimension(getMeasuredWidth(), getMeasuredHeight());
+        for (int i = 0; i < getChildCount(); i++) {
+            View childView = getChildAt(i);
+            measureChild(childView, widthMeasureSpec, heightMeasureSpec);
         }
     }
 
@@ -227,9 +234,10 @@ public class DrawingView extends ViewGroup {
             public void run(){
                 handler.post(new Runnable() {
                     public void run(){
+                        if (points.isEmpty()) return;
                         Point first = points.get(0);
-                        ArrayList<RecognizerResult> results = recognizer.recognize(points);
-                        ArrayList<Point>tempPoints = new ArrayList<Point>();
+                        ArrayList<RecognizerResult> results = Recognizer.recognize(points);
+                        ArrayList<Point>tempPoints = new ArrayList<>();
                         tempPoints.addAll(points);
                         points.clear();
                         drawPath.reset();
@@ -239,25 +247,12 @@ public class DrawingView extends ViewGroup {
                             // Launch the dialog if there are options that are too close
                             generateRecognizerOptionsDialog(results, tempPoints);
                         } else if(results.size() ==1){
-
                             if(results.get(0).gesture.name.equals("[]")) {
                                 Size tempSize = results.get(0).size;
-                                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-                                ClassDiagramView v = new ClassDiagramView(DrawingView.this.getContext(), tempSize.getWidth(), tempSize.getHeight());
-//                                v.setLayoutParams(new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
-
-//                                ClassDiagram v = new ClassDiagram(DrawingView.this.getContext());
-                                LayoutParams params = new LayoutParams(
-                                        LayoutParams.WRAP_CONTENT,
-                                        LayoutParams.WRAP_CONTENT);
-                                v.setX((float) first.x);
-                                v.setY((float) first.y);
-//                                umlObjects.add(v);
-                                DrawingView.this.addView(v, params);
-                                Log.i(TAG, "Number of children viewgroup has is: "+ getChildCount()
-                                         + " visibility of object is: "+v.getVisibility()
-                                         + " size is: " + v.getLayoutParams().toString());
+                                ClassDiagram view = (ClassDiagram) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
+                                view.setX((float) first.x);
+                                view.setY((float) first.y);
+                                DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
                             }
                             Toast.makeText(DrawingView.this.getContext(),
                                     "Results were size 1, gesture="+ results.get(0).gesture.toString(),
