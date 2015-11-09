@@ -311,7 +311,7 @@ public class DrawingView extends ViewGroup {
                 public void onClick(View v) {
                     // Notify the templateManager to update based on the user's selection
                     TemplateManager.addNewTemplate(tempGesture, points);
-                    TemplateManager.save();
+                    TemplateManager.save(getContext());
                     gestureDialog.dismiss();
                 }
             });
