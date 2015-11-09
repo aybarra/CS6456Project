@@ -35,15 +35,16 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/propertiesListView"
-        android:layout_weight=".333" />
+        android:id="@+id/memberListView"
+        android:layout_weight=".333"
+        android:background="@android:color/darker_gray"/>
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Member"
-        android:id="@+id/button" />
+        android:text="Add Member Var"
+        android:id="@+id/addMemberBtn" />
 
     <View
         android:layout_width="match_parent"
@@ -53,12 +54,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/methodsListView"
-        android:layout_weight=".333" />
+        android:layout_weight=".333"
+        android:background="@android:color/darker_gray"/>
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Add Method"
-        android:id="@+id/addMethodbutton" />
+        android:id="@+id/addMethodBtn" />
 
 </hcay.pui.com.umlapp.ClassDiagram>

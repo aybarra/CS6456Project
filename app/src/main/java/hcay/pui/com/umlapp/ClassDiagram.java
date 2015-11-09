@@ -8,7 +8,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+
+import java.util.ArrayList;
 
 /**
  * @author Andy Ybarra
@@ -24,6 +28,22 @@ public class ClassDiagram extends LinearLayout {
 
     public ClassDiagram(Context context){
         super(context);
+//        init(context);
+    }
+
+    public void init(Context context){
+        ListView memberListView = (ListView)findViewById(R.id.memberListView);
+        Log.i(TAG, "MemberListView is null is: " + (memberListView == null));
+        MemberAdapter adapter = new MemberAdapter(context, new ArrayList<Member>());
+        memberListView.setAdapter(adapter);
+//
+//        Button addMember = (Button)findViewById(R.id.addMemberBtn);
+//        addMember.setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                adapter.addItem("");
+//            }
+//        });
     }
 
     @Override

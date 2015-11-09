@@ -270,6 +270,7 @@ public class DrawingView extends ViewGroup {
                             if(results.get(0).gesture.name.equals("[]")) {
                                 Size tempSize = results.get(0).size;
                                 ClassDiagram view = (ClassDiagram) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
+                                view.init(DrawingView.this.getContext());
                                 view.setX((float) first.x);
                                 view.setY((float) first.y);
                                 DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
