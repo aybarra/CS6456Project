@@ -1,16 +1,14 @@
 package hcay.pui.com.recognizer;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import java.lang.reflect.Type;
@@ -20,41 +18,43 @@ import com.google.gson.*;
 
 public class TemplateManager {
 
-	private static String templateFilePath;
+	private static final String TEMPLATE_FILE_NAME = "templates.g";
 	private static final Gson GSON = new Gson();
 
 	public static ArrayList<Template> templates = new ArrayList<>();
 
 	private static boolean changed = false;
 
-	private static AssetManager assetManager;
-
 	public static void initialize(Context context) {
-//		templateFilePath
-		//.open("templates.g");
-		assetManager = context.getAssets();
-		templates = load();
+		templates = load(context);
 	}
 
-	public static ArrayList<Template> load() {
+	public static ArrayList<Template> load(Context context) {
+        BufferedReader reader;
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open("templates.g")));
+            reader = new BufferedReader(new InputStreamReader(context.openFileInput(TEMPLATE_FILE_NAME)));
+            changed = true;
+        } catch (FileNotFoundException e) {
+            try {
+                reader = new BufferedReader(new InputStreamReader(context.getAssets().open(TEMPLATE_FILE_NAME)));
+            } catch (IOException e1) {
+                return new ArrayList<>();
+            }
+        }
 
-			Type listType = new TypeToken<ArrayList<Template>>(){}.getType();
-			ArrayList<Template> t = GSON.fromJson(reader, listType);
+        Type listType = new TypeToken<ArrayList<Template>>() {
+        }.getType();
+        ArrayList<Template> t = GSON.fromJson(reader, listType);
 
-			for (Template template : t) {
-				if (!template.normalized) {
-					template.normalizePoints();
-					changed = true;
-				}
-			}
+        for (Template template : t) {
+            if (!template.normalized) {
+                template.normalizePoints();
+                changed = true;
+            }
+        }
 
-			if (changed) saveTemplates(t);
-			return t;
-		} catch (IOException e) {
-			return new ArrayList<>();
-		}
+        if (changed) saveTemplates(t, context);
+        return t;
 	}
 
 	public static void addNewTemplate(Gesture gesture, ArrayList<Point> points) {
@@ -67,16 +67,15 @@ public class TemplateManager {
 		changed = true;
 	}
 
-	public static void save() {
+	public static void save(Context context) {
 		if (changed) {
-			saveTemplates(templates);
+			saveTemplates(templates, context);
 		}
 	}
 
-	private static void saveTemplates(ArrayList<Template> templates) {
+	private static void saveTemplates(ArrayList<Template> templates, Context context) {
 		try {
-			FileWriter writer = new FileWriter(templateFilePath);
-			// Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(context.openFileOutput(TEMPLATE_FILE_NAME, Context.MODE_PRIVATE)));
 			GSON.toJson(templates, writer);
 			writer.close();
 		} catch (IOException e) {}
