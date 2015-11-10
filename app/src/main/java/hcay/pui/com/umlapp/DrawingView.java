@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import android.graphics.Bitmap;
@@ -74,21 +75,12 @@ public class DrawingView extends ViewGroup {
 
     final Handler handler = new Handler();
 
-    private List<View> umlObjects;
-
-    /** The amount of space used by children in the left gutter. */
-    private int mLeftWidth;
-
-    /** The amount of space used by children in the right gutter. */
-    private int mRightWidth;
-
-    /** These are used for computing child frames based on their gravity. */
-    private final Rect mTmpContainerRect = new Rect();
-    private final Rect mTmpChildRect = new Rect();
+    private ScaleGestureDetector mScaleDetector;
+    private float mScaleFactor = 1.f;
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
-        setupDrawing();
+        setupDrawing(context);
     }
 
     @Override
@@ -109,7 +101,7 @@ public class DrawingView extends ViewGroup {
         }
     }
 
-    private void setupDrawing(){
+    private void setupDrawing(Context context){
         //get drawing area setup for interaction
         drawPath = new Path();
         drawPaint = new Paint();
@@ -130,7 +122,9 @@ public class DrawingView extends ViewGroup {
         recognizer = new Recognizer();
         points = new ArrayList<Point>();
 
-        umlObjects = new ArrayList<View>();
+//        umlObjects = new ArrayList<View>();
+
+        mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
     }
 
     @Override
@@ -148,6 +142,9 @@ public class DrawingView extends ViewGroup {
     @Override
     protected void onDraw(Canvas canvas) {
 
+        // To support pinch to zoom
+        canvas.scale(mScaleFactor, mScaleFactor);
+
         //draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
@@ -164,37 +161,42 @@ public class DrawingView extends ViewGroup {
         float touchX = event.getX();
         float touchY = event.getY();
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                // Need to check if the timer is set, if so dismiss it
-                if(timer!=null){
-                    stopTimer();
-                }
-                drawPath.moveTo(touchX, touchY);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                drawPath.lineTo(touchX, touchY);
-                points.add(new Point(touchX, touchY, strokeCounter));
-                break;
-            case MotionEvent.ACTION_UP:
-                drawCanvas.drawPath(drawPath, drawPaint);
-                strokeCounter++;
+        if(event.getPointerCount() > 1) {
+            mScaleDetector.onTouchEvent(event);
+            return true;
+        } else {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    // Need to check if the timer is set, if so dismiss it
+                    if(timer!=null){
+                        stopTimer();
+                    }
+                    drawPath.moveTo(touchX, touchY);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    drawPath.lineTo(touchX, touchY);
+                    points.add(new Point(touchX, touchY, strokeCounter));
+                    break;
+                case MotionEvent.ACTION_UP:
+                    drawCanvas.drawPath(drawPath, drawPaint);
+                    strokeCounter++;
 
-                // Only set the time if we're in drawing mode
-                if(!selectionEnabled){
-                    // set the timer for the recognizer to be called
-                    startTimer();
-                } else {
-                    invalidate();
-                }
+                    // Only set the time if we're in drawing mode
+                    if(!selectionEnabled){
+                        // set the timer for the recognizer to be called
+                        startTimer();
+                    } else {
+                        invalidate();
+                    }
 
-                break;
-            default:
-                return false;
+                    break;
+                default:
+                    return false;
+            }
+
+            invalidate();
+            return true;
         }
-
-        invalidate();
-        return true;
     }
 
     public void setColor(String newColor){
@@ -359,6 +361,18 @@ public class DrawingView extends ViewGroup {
         gestureDialog.setContentView(view);
 
         gestureDialog.show();
+    }
 
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            mScaleFactor *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+
+            invalidate();
+            return true;
+        }
     }
 }
