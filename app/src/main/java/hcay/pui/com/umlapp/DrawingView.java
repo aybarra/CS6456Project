@@ -1,6 +1,7 @@
 package hcay.pui.com.umlapp;
 
 import android.app.Dialog;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -10,6 +11,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.ScaleGestureDetector;
@@ -78,6 +80,12 @@ public class DrawingView extends ViewGroup {
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1.f;
 
+    // Members to support zooming and dragging
+    private static int NONE = 0;
+    private static int DRAG = 1;
+    private static int ZOOM = 2;
+    private int mode;
+
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing(context);
@@ -145,7 +153,7 @@ public class DrawingView extends ViewGroup {
         // To support pinch to zoom
         canvas.scale(mScaleFactor, mScaleFactor);
 
-        //draw view
+        // Draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
 
@@ -257,29 +265,30 @@ public class DrawingView extends ViewGroup {
                 handler.post(new Runnable() {
                     public void run(){
                         if (points == null || points.isEmpty()) return;
-                        Point first = points.get(0);
+//                        Point first = points.get(0);
                         ArrayList<RecognizerResult> results = Recognizer.recognize(points);
+                        Point leftMost = getLeftMost();
+                        Point rightMost = getRightMost();
+                        Point topMost = getTopMost();
+                        Point bottomMost = getBottomMost();
+                        Point[] bounds = {leftMost, rightMost, topMost, bottomMost};
+
+                        Log.i(TAG, "left: "+ leftMost.toString() + ", right: " + rightMost.toString()
+                                 + ", top: " + topMost.toString() + ", bottom: "+ bottomMost.toString());
+
+                        // Using this for giving the recognizer updates
                         ArrayList<Point>tempPoints = new ArrayList<>();
                         tempPoints.addAll(points);
                         points.clear();
                         drawPath.reset();
                         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
                         invalidate();
+
                         if(results.size() > 1){
                             // Launch the dialog if there are options that are too close
-                            generateRecognizerOptionsDialog(results, tempPoints);
+                            generateRecognizerOptionsDialog(results, tempPoints, bounds);
                         } else if(results.size() ==1){
-                            if(results.get(0).gesture == Gesture.CLASSIFIER) {
-                                Size tempSize = results.get(0).size;
-                                ClassDiagram view = (ClassDiagram) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
-                                view.init(DrawingView.this.getContext());
-                                view.setX((float) first.x);
-                                view.setY((float) first.y);
-                                DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
-                            }
-                            Toast.makeText(DrawingView.this.getContext(),
-                                    "Results were size 1, gesture="+ results.get(0).gesture.toString(),
-                                    Toast.LENGTH_SHORT).show();
+                            performGestureAction(results.get(0), bounds);
                         } else {
                             Toast.makeText(DrawingView.this.getContext(),
                                     "No result",
@@ -291,16 +300,26 @@ public class DrawingView extends ViewGroup {
         };
     }
 
-    private Point fetchLeftMost() {
-        Point min = new Point(Double.MAX_VALUE, Double.MAX_VALUE, -1);
-        for(Point p: points){
-            if(p.x < min.x){
-                min.x = p.x;
-            } else if(p.y < min.y){
-                min.y = p.y;
-            }
+    private void performGestureAction(RecognizerResult result, final Point[] bounds){
+        Point leftMost = bounds[0];
+        Point rightMost = bounds[1];
+        Point topMost = bounds[2];
+        Point bottomMost = bounds[3];
+
+        if(result.gesture == Gesture.CLASSIFIER) {
+            Size tempSize = result.size;
+            ClassDiagram view = (ClassDiagram) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
+            view.init(DrawingView.this.getContext());
+            view.setX((float) leftMost.x);
+            view.setY((float) topMost.y);
+            DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
+        } else if(result.gesture == Gesture.UNSPECIFIED) {
+            // Figure out the two closest classfiers
+            // Need to fetch the right and left most points, top and bottom
         }
-        return min;
+        Toast.makeText(DrawingView.this.getContext(),
+                "Results were size 1, gesture="+ result.gesture.toString(),
+                Toast.LENGTH_SHORT).show();
     }
 
     public void startTimer() {
@@ -324,7 +343,10 @@ public class DrawingView extends ViewGroup {
         }
     }
 
-    public void generateRecognizerOptionsDialog(ArrayList<RecognizerResult> results, final ArrayList<Point>points){
+    public void generateRecognizerOptionsDialog(final ArrayList<RecognizerResult> results,
+                                                final ArrayList<Point>points,
+                                                final Point[] bounds){
+
         final Dialog gestureDialog = new Dialog(this.getContext());
         gestureDialog.setTitle("Clarify your gesture:");
 
@@ -335,18 +357,22 @@ public class DrawingView extends ViewGroup {
         View view = inflater.inflate(R.layout.gesture_chooser, null);
         LinearLayout ll = (LinearLayout) view.findViewById(R.id.gesture_picker_layout);
 
+        int pos = 0;
         for(RecognizerResult rr: results){
             final ImageButton rrBtn = new ImageButton(this.getContext());
             final Gesture tempGesture = rr.gesture;
             rrBtn.setImageResource(getResources().getIdentifier(rr.gesture.imageName, "drawable",
                     this.getContext().getPackageName()));
-
+            rrBtn.setId(pos);
             rrBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // Notify the templateManager to update based on the user's selection
                     TemplateManager.addNewTemplate(tempGesture, points);
                     TemplateManager.save(getContext());
+                    Log.i(TAG+"DIALOG", "ID is: "+v.getId());
+                    // TODO Get the result that corresponds to this button
+                    performGestureAction(results.get(v.getId()), bounds);
                     gestureDialog.dismiss();
                 }
             });
@@ -354,13 +380,74 @@ public class DrawingView extends ViewGroup {
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
             ll.addView(rrBtn);
-
+            pos++;
         }
 
         // Do this at the end
         gestureDialog.setContentView(view);
 
         gestureDialog.show();
+    }
+
+
+    private Point getLeftMost() {
+        Point leftMost = new Point(Double.MAX_VALUE, Double.MAX_VALUE, -1);
+        if(points != null){
+            for(Point p: points){
+                if(p.x < leftMost.x){
+                    leftMost = p;
+                }
+            }
+            return leftMost;
+        } else {
+            Log.e(TAG, "POINTS WAS NULL");
+            return null;
+        }
+    }
+
+    private Point getRightMost() {
+        Point rightMost = new Point(Double.MIN_VALUE, Double.MIN_VALUE, -1);
+        if(points != null){
+            for(Point p: points){
+                if(p.x > rightMost.x){
+                    rightMost = p;
+                }
+            }
+            return rightMost;
+        } else {
+            Log.e(TAG, "POINTS WAS NULL");
+            return null;
+        }
+    }
+
+    private Point getTopMost() {
+        Point topMost = new Point(Double.MAX_VALUE, Double.MAX_VALUE, -1);
+        if(points != null){
+            for(Point p: points){
+                if(p.y < topMost.y){
+                    topMost = p;
+                }
+            }
+            return topMost;
+        } else {
+            Log.e(TAG, "POINTS WAS NULL");
+            return null;
+        }
+    }
+
+    private Point getBottomMost() {
+        Point bottomMost = new Point(Double.MIN_VALUE, Double.MIN_VALUE, -1);
+        if(points != null){
+            for(Point p: points){
+                if(p.y > bottomMost.y){
+                    bottomMost = p;
+                }
+            }
+            return bottomMost;
+        } else {
+            Log.e(TAG, "POINTS WAS NULL");
+            return null;
+        }
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {

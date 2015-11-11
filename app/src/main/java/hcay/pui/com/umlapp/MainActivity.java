@@ -104,9 +104,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (id == R.id.action_settings) {
             return true;
         } else if(id == R.id.action_reset_templates) {
-//            boolean result = TemplateManager.resetTemplates(getApplicationContext());
-//            Toast.makeText(getApplicationContext(), "Reset templates was: " +
-//                          ((result)? "successful": "unsuccessful"), Toast.LENGTH_SHORT).show();
+            boolean result = TemplateManager.resetTemplates(getApplicationContext());
+            Toast.makeText(getApplicationContext(), "Reset templates was: " +
+                          ((result)? "successful": "unsuccessful"), Toast.LENGTH_SHORT).show();
             return true;
         }
 
