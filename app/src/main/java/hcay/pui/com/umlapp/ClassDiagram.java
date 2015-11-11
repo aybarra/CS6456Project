@@ -34,17 +34,28 @@ public class ClassDiagram extends LinearLayout {
 
     public void init(Context context){
         ListView memberListView = (ListView)findViewById(R.id.memberListView);
-        Log.i(TAG, "MemberListView is null is: " + (memberListView == null));
-        final MemberAdapter adapter = new MemberAdapter(context, new ArrayList<Member>());
-        memberListView.setAdapter(adapter);
+        final FeatureAdapter memberAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), true);
+        memberListView.setAdapter(memberAdapter);
 
         Button addMember = (Button)findViewById(R.id.addMemberBtn);
         addMember.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(TAG + "_addMember", "Add Member clicked");
-                adapter.addItem("");
-                adapter.notifyDataSetChanged();
+                memberAdapter.addItem("");
+                memberAdapter.notifyDataSetChanged();
+            }
+        });
+
+        ListView methodListView = (ListView)findViewById(R.id.methodListView);
+        final FeatureAdapter methodAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), false);
+        methodListView.setAdapter(methodAdapter);
+
+        Button addMethod = (Button)findViewById(R.id.addMethodBtn);
+        addMethod.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                methodAdapter.addItem("");
+                methodAdapter.notifyDataSetChanged();
             }
         });
 
@@ -69,6 +80,11 @@ public class ClassDiagram extends LinearLayout {
                 return false;
             }
         });
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        return ev.getX() <= getMeasuredWidth() && ev.getY() <= getMeasuredHeight();
     }
 
     @Override

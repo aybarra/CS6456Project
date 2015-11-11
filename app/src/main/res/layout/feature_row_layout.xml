@@ -6,22 +6,22 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editMemberName"
-        android:hint="&lt;Enter member name here>" />
+        android:id="@+id/editFeatureName"
+        android:hint="&lt;Enter feature name here>" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save"
-        android:id="@+id/saveMemberBtn"
+        android:id="@+id/saveFeatureBtn"
         android:visibility="visible"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/memberName"
+        android:id="@+id/featureName"
         android:visibility="gone"/>
 
     <Button
@@ -29,6 +29,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Remove"
-        android:id="@+id/removeMemberBtn"
+        android:id="@+id/removeFeatureBtn"
         android:visibility="visible"/>
 </LinearLayout>

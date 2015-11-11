@@ -78,7 +78,7 @@
         <ListView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/methodsListView"
+            android:id="@+id/methodListView"
             android:layout_weight=".333"
             android:background="@android:color/darker_gray"/>
         <Button
