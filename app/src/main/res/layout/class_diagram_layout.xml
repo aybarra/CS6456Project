@@ -3,7 +3,7 @@
     android:orientation="vertical" android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 
-    <FrameLayout
+    <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="wrap_content"
@@ -12,13 +12,24 @@
         <at.markushi.ui.CircleButton
             android:layout_width="64dip"
             android:layout_height="64dip"
-            android:src="@drawable/arrow"
+            android:src="@drawable/bi_navigable"
+            android:layout_alignParentLeft="true"
             app:cb_color="#6ed9f3"
-            app:cb_pressedRingWidth="8dip" />
-    </FrameLayout>
+            app:cb_pressedRingWidth="8dip"
+            android:id="@+id/dragButton" />
+
+        <at.markushi.ui.CircleButton
+            android:layout_width="64dip"
+            android:layout_height="64dip"
+            android:src="@drawable/arrow"
+            android:layout_toRightOf="@id/dragButton"
+            app:cb_color="#6ed9f3"
+            app:cb_pressedRingWidth="8dip"
+            android:id="@+id/typeButton" />
+    </RelativeLayout>
 
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
         android:hint="&lt;Class Name>"
