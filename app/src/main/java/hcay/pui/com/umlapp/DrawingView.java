@@ -79,12 +79,7 @@ public class DrawingView extends ViewGroup {
 
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1.f;
-
-    // Members to support zooming and dragging
-    private static int NONE = 0;
-    private static int DRAG = 1;
-    private static int ZOOM = 2;
-    private int mode;
+    private boolean mScaled = false;
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -151,7 +146,14 @@ public class DrawingView extends ViewGroup {
     protected void onDraw(Canvas canvas) {
 
         // To support pinch to zoom
-        canvas.scale(mScaleFactor, mScaleFactor);
+        if (mScaled) {
+            float scaledHeight = canvasBitmap.getHeight()*mScaleFactor;
+            float scaledWidth = canvasBitmap.getWidth()*mScaleFactor;
+            canvasBitmap = Bitmap.createScaledBitmap(canvasBitmap, (int) scaledWidth, (int) scaledHeight, false);
+//            canvas.drawBitmap(out, null, thumbnailRectF, thumbCanvasPaint);
+            canvas.scale(mScaleFactor, mScaleFactor);
+            mScaled = false;
+        }
 
         // Draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
@@ -252,7 +254,7 @@ public class DrawingView extends ViewGroup {
     public void startNew(){
 
         int count = this.getChildCount();
-        for(int i = 0; i < count; i++){
+        for(int i = count; i >= 0; i--){
             removeView(getChildAt(i));
         }
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
@@ -370,7 +372,7 @@ public class DrawingView extends ViewGroup {
                     // Notify the templateManager to update based on the user's selection
                     TemplateManager.addNewTemplate(tempGesture, points);
                     TemplateManager.save(getContext());
-                    Log.i(TAG+"DIALOG", "ID is: "+v.getId());
+                    Log.i(TAG + "DIALOG", "ID is: " + v.getId());
                     // TODO Get the result that corresponds to this button
                     performGestureAction(results.get(v.getId()), bounds);
                     gestureDialog.dismiss();
@@ -457,7 +459,7 @@ public class DrawingView extends ViewGroup {
 
             // Don't let the object get too small or too large.
             mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
-
+            mScaled = true;
             invalidate();
             return true;
         }
