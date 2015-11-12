@@ -2,7 +2,6 @@ package hcay.pui.com.umlapp;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -19,16 +18,16 @@ import at.markushi.ui.CircleButton;
  * @author Andy Ybarra
  * @author Hyun Seo Chung
  */
-public class ClassDiagram extends LinearLayout {
+public class ClassDiagramView extends LinearLayout {
 
-    private final String TAG = "CLASS_DIAGRAM";
+    private final String TAG = "CLASS_DIAGRAM_VIEW";
     private float prevX, prevY;
 
-    public ClassDiagram(Context context, AttributeSet attrs) {
+    public ClassDiagramView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public ClassDiagram(Context context){
+    public ClassDiagramView(Context context){
         super(context);
 //        init(context);
     }
@@ -72,10 +71,10 @@ public class ClassDiagram extends LinearLayout {
                     case MotionEvent.ACTION_MOVE:
                         float dx = event.getX() - prevX;
                         float dy = event.getY() - prevY;
-                        float newX = ClassDiagram.this.getX() + dx;
-                        float newY = ClassDiagram.this.getY() + dy;
-                        ClassDiagram.this.setX(newX);
-                        ClassDiagram.this.setY(newY);
+                        float newX = ClassDiagramView.this.getX() + dx;
+                        float newY = ClassDiagramView.this.getY() + dy;
+                        ClassDiagramView.this.setX(newX);
+                        ClassDiagramView.this.setY(newY);
                         break;
                 }
                 return false;

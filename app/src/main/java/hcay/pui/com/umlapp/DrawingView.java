@@ -1,19 +1,14 @@
 package hcay.pui.com.umlapp;
 
 import android.app.Dialog;
-import android.content.ClipDescription;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.DragEvent;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -331,14 +326,14 @@ public class DrawingView extends ViewGroup {
         Point rightMost = bounds[1];
         Point topMost = bounds[2];
         Point bottomMost = bounds[3];
+        Size tempSize = result.size;
 
         if(result.gesture == Gesture.CLASSIFIER) {
-            Size tempSize = result.size;
-            ClassDiagram view = (ClassDiagram) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
+            ClassDiagramView view = (ClassDiagramView) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
             view.init(DrawingView.this.getContext());
             view.setX((float) leftMost.x);
             view.setY((float) topMost.y);
-            umlObjects.add(new UMLObject(view));
+            umlObjects.add(new ClassDiagramObject(view));
             DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
         } else if(result.gesture == Gesture.UNSPECIFIED) {
             // Figure out the two closest classfiers

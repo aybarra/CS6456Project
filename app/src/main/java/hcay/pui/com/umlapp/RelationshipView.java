@@ -18,14 +18,14 @@ import hcay.pui.com.recognizer.Size;
 /**
  * Created by andrasta on 11/7/15.
  */
-public class LineObject extends View {
+public class RelationshipView extends View {
 
     private View entity1;
     private View entity2;
     private final String TAG = "LineObject_DIAGRAM";
 
     private Paint mPaint;
-    public LineObject(Context context, View entity1, View entity2){
+    public RelationshipView(Context context, View entity1, View entity2){
         super(context);
 
         this.entity1 = entity1;

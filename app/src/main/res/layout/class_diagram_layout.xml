@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<hcay.pui.com.umlapp.ClassDiagram xmlns:android="http://schemas.android.com/apk/res/android"
+<hcay.pui.com.umlapp.ClassDiagramView xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="wrap_content" android:layout_height="wrap_content" >
 
@@ -90,4 +90,4 @@
 
     </LinearLayout>
 
-</hcay.pui.com.umlapp.ClassDiagram>
+</hcay.pui.com.umlapp.ClassDiagramView>
