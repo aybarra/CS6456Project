@@ -31,11 +31,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         drawView = (DrawingView)findViewById(R.id.drawing);
-
-//        LinearLayout paintLayout = (LinearLayout)findViewById(R.id.paint_colors);
-//        currPaint = (ImageButton)paintLayout.getChildAt(0);
-//        currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
-
+        
         smallBrush = getResources().getInteger(R.integer.small_size);
         mediumBrush = getResources().getInteger(R.integer.medium_size);
         largeBrush = getResources().getInteger(R.integer.large_size);
@@ -64,7 +60,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
-     * Not used anymore
+     *
      * @param view
      */
     public void paintClicked(View view){
@@ -116,47 +112,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if(view.getId()==R.id.draw_btn){
-
             drawView.setSelectionEnabled(false);
-            //draw button clicked
-//            final Dialog brushDialog = new Dialog(this);
-//            brushDialog.setTitle("Brush size:");
-//            brushDialog.setContentView(R.layout.brush_chooser);
-//
-//            ImageButton smallBtn = (ImageButton)brushDialog.findViewById(R.id.small_brush);
-//            smallBtn.setOnClickListener(new OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    drawView.setBrushSize(smallBrush);
-//                    drawView.setLastBrushSize(smallBrush);
-//                    drawView.setSelectionEnabled(false);
-//                    brushDialog.dismiss();
-//                }
-//            });
-//
-//            ImageButton mediumBtn = (ImageButton)brushDialog.findViewById(R.id.medium_brush);
-//            mediumBtn.setOnClickListener(new OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    drawView.setBrushSize(mediumBrush);
-//                    drawView.setLastBrushSize(mediumBrush);
-//                    drawView.setSelectionEnabled(false);
-//                    brushDialog.dismiss();
-//                }
-//            });
-//
-//            ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
-//            largeBtn.setOnClickListener(new OnClickListener(){
-//                @Override
-//                public void onClick(View v) {
-//                    drawView.setBrushSize(largeBrush);
-//                    drawView.setLastBrushSize(largeBrush);
-//                    drawView.setSelectionEnabled(false);
-//                    brushDialog.dismiss();
-//                }
-//            });
-//
-//            brushDialog.show();
+
         } else if(view.getId()==R.id.selection_btn){
 
             drawView.setSelectionEnabled(true);
@@ -222,6 +179,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * This was added as a work around for when we're working with a device
+     *  that doesn't have any pictures yet.
+     */
     void fixMediaDir() {
         File sdcard = Environment.getExternalStorageDirectory();
         if (sdcard != null) {

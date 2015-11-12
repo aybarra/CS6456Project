@@ -2,6 +2,7 @@ package hcay.pui.com.umlapp;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -16,7 +17,7 @@ import at.markushi.ui.CircleButton;
 
 /**
  * @author Andy Ybarra
- * Uses layout to draw view
+ * @author Hyun Seo Chung
  */
 public class ClassDiagram extends LinearLayout {
 
@@ -102,4 +103,5 @@ public class ClassDiagram extends LinearLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
     }
+
 }

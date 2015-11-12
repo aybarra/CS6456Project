@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -30,7 +31,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -80,6 +80,9 @@ public class DrawingView extends ViewGroup {
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1.f;
     private boolean mScaled = false;
+    private Rect clipBounds_canvas;
+
+    private List<UMLObject> umlObjects;
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -116,7 +119,6 @@ public class DrawingView extends ViewGroup {
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
-
         canvasPaint = new Paint(Paint.DITHER_FLAG);
 
         brushSize = getResources().getInteger(R.integer.medium_size);
@@ -125,7 +127,7 @@ public class DrawingView extends ViewGroup {
         recognizer = new Recognizer();
         points = new ArrayList<Point>();
 
-//        umlObjects = new ArrayList<View>();
+        umlObjects = new ArrayList<UMLObject>();
 
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
     }
@@ -136,6 +138,9 @@ public class DrawingView extends ViewGroup {
         super.onSizeChanged(w, h, oldw, oldh);
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
+//        if(drawCanvas != null){
+//            drawCanvas
+//        }
     }
 
     private static void makeEffect(){
@@ -145,18 +150,28 @@ public class DrawingView extends ViewGroup {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        // To support pinch to zoom
-        if (mScaled) {
-            float scaledHeight = canvasBitmap.getHeight()*mScaleFactor;
-            float scaledWidth = canvasBitmap.getWidth()*mScaleFactor;
-            canvasBitmap = Bitmap.createScaledBitmap(canvasBitmap, (int) scaledWidth, (int) scaledHeight, false);
-//            canvas.drawBitmap(out, null, thumbnailRectF, thumbCanvasPaint);
-            canvas.scale(mScaleFactor, mScaleFactor);
-            mScaled = false;
-        }
+//        clipBounds_canvas = canvas.getClipBounds();
+        // Notify children
+//        if(mScaled){
+//            for(int i = 0; i < getChildCount(); i++){
+//                ((ClassDiagram)getChildAt(i)).updateScale(mScaleFactor);
+//                ((ClassDiagram)getChildAt(i)).updateClip(clipBounds_canvas);
+//            }
+//            mScaled = false;
+//        }
+//        canvas.scale(mScaleFactor, mScaleFactor);
+
+//        drawPaint.setStrokeWidth(brushSize * (1/mScaleFactor));
 
         // Draw view
+        // Original
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
+
+//        Rect rectangle = canvas.getClipBounds();
+//        float val = 1/mScaleFactor;
+//        RectF dst = new RectF(rectangle.left*val, rectangle.top*val, rectangle.right*val, rectangle.bottom*val);
+//        canvas.drawBitmap(canvasBitmap, null, dst, drawPaint);
+
         canvas.drawPath(drawPath, drawPaint);
 
         if(selectionEnabled){
@@ -168,6 +183,12 @@ public class DrawingView extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        // New values
+//        float touchX = event.getX() / mScaleFactor + clipBounds_canvas.left;
+//        float touchY = event.getY() / mScaleFactor + clipBounds_canvas.top;
+
+        // Original
         float touchX = event.getX();
         float touchY = event.getY();
 
@@ -257,6 +278,9 @@ public class DrawingView extends ViewGroup {
         for(int i = count; i >= 0; i--){
             removeView(getChildAt(i));
         }
+        // Clear the references we're managing
+        umlObjects.clear();
+
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
     }
@@ -314,6 +338,7 @@ public class DrawingView extends ViewGroup {
             view.init(DrawingView.this.getContext());
             view.setX((float) leftMost.x);
             view.setY((float) topMost.y);
+            umlObjects.add(new UMLObject(view));
             DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
         } else if(result.gesture == Gesture.UNSPECIFIED) {
             // Figure out the two closest classfiers
@@ -459,6 +484,15 @@ public class DrawingView extends ViewGroup {
 
             // Don't let the object get too small or too large.
             mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+
+            DrawingView.this.setScaleX(mScaleFactor);
+            DrawingView.this.setScaleY(mScaleFactor);
+
+//            int height = (int)(DrawingView.this.getHeight() * (1/mScaleFactor));
+//            int width = (int)(DrawingView.this.getWidth() * (1/mScaleFactor));
+//            DrawingView.this.setLayoutParams(new LinearLayout.LayoutParams(width, height));
+            Log.i(TAG, "HEIGHT IS: " + DrawingView.this.getHeight() + " WIDTH IS: " + DrawingView.this.getWidth());
+            // Resize when views new size would be smaller than the view size
             mScaled = true;
             invalidate();
             return true;
