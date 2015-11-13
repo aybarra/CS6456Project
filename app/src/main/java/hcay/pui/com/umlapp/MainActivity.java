@@ -24,7 +24,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private DrawingView drawView;
     private ImageButton currPaint, drawBtn, selectionBtn, newBtn, saveBtn;
     private float smallBrush, mediumBrush, largeBrush;
-    public static MenuItem undoItem, redoItem;
+    public static MenuItem undoItem, redoItem, deleteItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,10 +95,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onPrepareOptionsMenu(menu);
         undoItem = menu.findItem(R.id.action_undo);
         redoItem = menu.findItem(R.id.action_redo);
+        deleteItem = menu.findItem(R.id.action_delete);
         undoItem.setEnabled(false);
         redoItem.setEnabled(false);
+        deleteItem.setEnabled(false);
         undoItem.getIcon().setAlpha(50);
         redoItem.getIcon().setAlpha(50);
+        deleteItem.getIcon().setAlpha(50);
         return true;
     }
 
@@ -121,9 +124,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
             drawView.undoOrRedo(true);
         } else if (id == R.id.action_redo) {
             drawView.undoOrRedo(false);
+        } else if (id == R.id.action_delete) {
+            drawView.deleteSelected();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public static void updateDeleteItem(boolean enable) {
+        updateItem(deleteItem, enable);
+    }
+
+    private static void updateItem(MenuItem item, boolean enable) {
+        item.setEnabled(enable);
+        deleteItem.getIcon().setAlpha(enable ? 255 : 50);
     }
 
     @Override
