@@ -12,12 +12,16 @@ import hcay.pui.com.recognizer.Size;
  */
 public class ClassDiagramObject extends UMLObject {
 
+    public NoteView noteView;
+
     private List<Tuple> relationships;
     private List<String> memberVars;
     private List<String> methods;
 
     public ClassDiagramObject(ClassDiagramView view){
         super(view);
+
+        view.classDiagramObject = this;
 
         relationships = new ArrayList<>();
         memberVars = new ArrayList<>();
