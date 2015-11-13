@@ -24,6 +24,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private DrawingView drawView;
     private ImageButton currPaint, drawBtn, selectionBtn, newBtn, saveBtn;
     private float smallBrush, mediumBrush, largeBrush;
+    public static MenuItem undoItem, redoItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +91,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        undoItem = menu.findItem(R.id.action_undo);
+        redoItem = menu.findItem(R.id.action_redo);
+        undoItem.setEnabled(false);
+        redoItem.setEnabled(false);
+        undoItem.getIcon().setAlpha(50);
+        redoItem.getIcon().setAlpha(50);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -99,11 +112,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        } else if(id == R.id.action_reset_templates) {
+        } else if (id == R.id.action_reset_templates) {
             boolean result = TemplateManager.resetTemplates(getApplicationContext());
             Toast.makeText(getApplicationContext(), "Reset templates was: " +
                           ((result)? "successful": "unsuccessful"), Toast.LENGTH_SHORT).show();
             return true;
+        } else if (id == R.id.action_undo) {
+            drawView.undoOrRedo(true);
+        } else if (id == R.id.action_redo) {
+            drawView.undoOrRedo(false);
         }
 
         return super.onOptionsItemSelected(item);

@@ -308,6 +308,9 @@ public class DrawingView extends ViewGroup {
         // Clear the references we're managing
         umlObjects.clear();
         notes.clear();
+        backwardHistory.clear();
+        forwardHistory.clear();
+        updateUndoRedoItems();
 
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
@@ -374,6 +377,7 @@ public class DrawingView extends ViewGroup {
             }
         }
         forwardHistory.clear();
+        updateUndoRedoItems();
     }
 
     private UMLObject deleteUMLObject(UMLObject umlObject) {
@@ -408,6 +412,7 @@ public class DrawingView extends ViewGroup {
             invalidate();
             backwardHistory.add(new Action(ActionType.ADDED, view));
             forwardHistory.clear();
+            updateUndoRedoItems();
         }
     }
 
@@ -465,6 +470,7 @@ public class DrawingView extends ViewGroup {
             addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
             backwardHistory.add(new Action(ActionType.ADDED, classDiagramObject));
             forwardHistory.clear();
+            updateUndoRedoItems();
         } else if(result.gesture == Gesture.NAVIGABLE || result.gesture == Gesture.AGGREGATION
                 || result.gesture == Gesture.GENERALIZATION || result.gesture == Gesture.REALIZATION
                 || result.gesture == Gesture.COMPOSITION || result.gesture == Gesture.DEPENDENCY
@@ -776,18 +782,26 @@ public class DrawingView extends ViewGroup {
         }
     }
 
-    private void undoOrRedo(boolean undo) {
+    public void undoOrRedo(boolean undo) {
         ArrayList<Action> history = undo ? backwardHistory : forwardHistory;
         Action action = processAction(history.remove(history.size() - 1));
         if (undo) forwardHistory.add(action);
         else backwardHistory.add(action);
+        updateUndoRedoItems();
+    }
+
+    private void updateUndoRedoItems() {
+        MainActivity.undoItem.setEnabled(!backwardHistory.isEmpty());
+        MainActivity.redoItem.setEnabled(!forwardHistory.isEmpty());
+        MainActivity.undoItem.getIcon().setAlpha(backwardHistory.isEmpty() ? 50 : 255);
+        MainActivity.redoItem.getIcon().setAlpha(forwardHistory.isEmpty() ? 50 : 255);
     }
 
     private Action processAction(Action action) {
         switch (action.type) {
             case ADDED:
                 if (action.isUMLObject) deleteUMLObject(action.umlObject);
-                else deleteNote(action.noteView);
+                if (action.noteView != null) deleteNote(action.noteView);
                 action.type = ActionType.REMOVED;
                 break;
             case REMOVED:
