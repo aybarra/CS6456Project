@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,16 +26,20 @@ public class RelationshipView extends View {
     private final String TAG = "LineObject_DIAGRAM";
 
     private Paint mPaint;
-    public RelationshipView(Context context, ClassDiagramObject cdoSrc, ClassDiagramObject cdoDst){
+
+    public RelationshipView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+    public RelationshipView(Context context){
         super(context);
 
-        this.cdoSrc = cdoSrc;
-        this.cdoDst = cdoDst;
-
-        init(context);
+//        this.cdoSrc = cdoSrc;
+//        this.cdoDst = cdoDst;
+//
+//        init(context);
     }
 
-    public void init(Context context){
+    public void init(Context context, ClassDiagramObject cdoSrc, ClassDiagramObject cdoDst, GestureOrientation orientation){
         mPaint = new Paint();
         mPaint.setColor(Color.BLACK);
 
@@ -49,8 +54,10 @@ public class RelationshipView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        android.graphics.Point p1 = new android.graphics.Point(cdoSrc.getLocation().x, cdoSrc.getLocation().y);
-        android.graphics.Point p2 = new android.graphics.Point(cdoDst.getLocation().x, cdoDst.getLocation().y);
-        canvas.drawLine(p1.x, p1.y, p2.x, p2.y, mPaint);
+//        android.graphics.Point p1 = new android.graphics.Point(cdoSrc.getLocation().x, cdoSrc.getLocation().y);
+//        android.graphics.Point p2 = new android.graphics.Point(cdoDst.getLocation().x, cdoDst.getLocation().y);
+//        canvas.drawLine(p1.x, p1.y, p2.x, p2.y, mPaint);
+        mPaint.setColor(Color.BLUE);
+        mPaint.setStyle(Paint.Style.FILL);
     }
 }

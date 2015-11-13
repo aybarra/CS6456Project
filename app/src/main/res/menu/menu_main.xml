@@ -4,4 +4,16 @@
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/action_reset_templates" android:title="Reset Templates"
         android:orderInCategory="101" android:showAsAction="never" />
+    <item android:id="@+id/action_undo"
+        android:title="Undo"
+        android:icon="@drawable/ic_action_undo"
+        android:showAsAction="always"/>
+    <item android:id="@+id/action_redo"
+        android:title="Redo"
+        android:icon="@drawable/ic_action_redo"
+        android:showAsAction="always"/>
+    <item android:id="@+id/action_save"
+        android:title="Save"
+        android:icon="@android:drawable/ic_menu_save"
+        android:showAsAction="always"/>
 </menu>
