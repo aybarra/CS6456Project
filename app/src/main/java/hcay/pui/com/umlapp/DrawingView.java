@@ -6,11 +6,9 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -86,8 +84,8 @@ public class DrawingView extends ViewGroup {
     int dispWidth;
     int dispHeight;
 
-    private ArrayList<Action> backwardHistory = new ArrayList<>();
-    private ArrayList<Action> forwardHistory = new ArrayList<>();
+    private ArrayList<ArrayList<Action>> backwardHistory = new ArrayList<>();
+    private ArrayList<ArrayList<Action>> forwardHistory = new ArrayList<>();
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -273,6 +271,24 @@ public class DrawingView extends ViewGroup {
         points.clear();
     }
 
+    private void deleteSelected() {
+        ArrayList<Action> actions = new ArrayList<>();
+        for (Object selectedObject : selectedObjects) {
+            if (selectedObject instanceof ClassDiagramObject) {
+                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
+                deleteUMLObject(classDiagramObject);
+                actions.add(new Action(Action.ActionType.REMOVED, classDiagramObject));
+            } else if (selectedObject instanceof NoteView) {
+                NoteView noteView = (NoteView) selectedObject;
+                deleteNote(noteView);
+                actions.add(new Action(Action.ActionType.REMOVED, noteView));
+            }
+        }
+        backwardHistory.add(actions);
+        forwardHistory.clear();
+        updateUndoRedoItems();
+    }
+
     public void setColor(String newColor){
         // set color
         invalidate();
@@ -385,12 +401,12 @@ public class DrawingView extends ViewGroup {
         UMLObject umlObj = getContainingUMLObject(points);
         if (umlObj != null) {
             deleteUMLObject(umlObj);
-            backwardHistory.add(new Action(ActionType.REMOVED, umlObj));
+            backwardHistory.add(Action.create(Action.ActionType.REMOVED, umlObj));
         } else {
             NoteView noteView = getContainingNoteView(points);
             if (noteView != null) {
                 deleteNote(noteView);
-                backwardHistory.add(new Action(ActionType.REMOVED, noteView));
+                backwardHistory.add(Action.create(Action.ActionType.REMOVED, noteView));
             }
         }
         forwardHistory.clear();
@@ -427,7 +443,7 @@ public class DrawingView extends ViewGroup {
             ((ClassDiagramObject) umlObj).noteView = view;
             addView(view);
             invalidate();
-            backwardHistory.add(new Action(ActionType.ADDED, view));
+            backwardHistory.add(Action.create(Action.ActionType.ADDED, view));
             forwardHistory.clear();
             updateUndoRedoItems();
         }
@@ -485,7 +501,7 @@ public class DrawingView extends ViewGroup {
             UMLObject classDiagramObject = new ClassDiagramObject(view);
             umlObjects.add(classDiagramObject);
             addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
-            backwardHistory.add(new Action(ActionType.ADDED, classDiagramObject));
+            backwardHistory.add(Action.create(Action.ActionType.ADDED, classDiagramObject));
             forwardHistory.clear();
             updateUndoRedoItems();
         } else if(result.gesture == Gesture.NAVIGABLE || result.gesture == Gesture.AGGREGATION
@@ -800,10 +816,10 @@ public class DrawingView extends ViewGroup {
     }
 
     public void undoOrRedo(boolean undo) {
-        ArrayList<Action> history = undo ? backwardHistory : forwardHistory;
-        Action action = processAction(history.remove(history.size() - 1));
-        if (undo) forwardHistory.add(action);
-        else backwardHistory.add(action);
+        ArrayList<ArrayList<Action>> history = undo ? backwardHistory : forwardHistory;
+        ArrayList<Action> actions = processActions(history.remove(history.size() - 1));
+        if (undo) forwardHistory.add(actions);
+        else backwardHistory.add(actions);
         updateUndoRedoItems();
     }
 
@@ -814,12 +830,19 @@ public class DrawingView extends ViewGroup {
         MainActivity.redoItem.getIcon().setAlpha(forwardHistory.isEmpty() ? 50 : 255);
     }
 
+    private ArrayList<Action> processActions(ArrayList<Action> actions) {
+        for (Action action : actions) {
+            processAction(action);
+        }
+        return actions;
+    }
+
     private Action processAction(Action action) {
         switch (action.type) {
             case ADDED:
                 if (action.isUMLObject) deleteUMLObject(action.umlObject);
                 if (action.noteView != null) deleteNote(action.noteView);
-                action.type = ActionType.REMOVED;
+                action.type = Action.ActionType.REMOVED;
                 break;
             case REMOVED:
                 if (action.isUMLObject) {
@@ -831,7 +854,7 @@ public class DrawingView extends ViewGroup {
                     addView(action.noteView);
                 }
                 invalidate();
-                action.type = ActionType.ADDED;
+                action.type = Action.ActionType.ADDED;
                 break;
             case NONE:
                 break;
@@ -839,27 +862,4 @@ public class DrawingView extends ViewGroup {
         return action;
     }
 
-    private class Action {
-        public ActionType type = ActionType.NONE;
-        public NoteView noteView;
-        public UMLObject umlObject;
-        public boolean isUMLObject;
-
-        public Action(ActionType type, NoteView noteView) {
-            this.type = type;
-            this.noteView = noteView;
-            this.isUMLObject = false;
-        }
-
-        public Action(ActionType type, UMLObject umlObject) {
-            this.type = type;
-            this.umlObject = umlObject;
-            this.noteView = umlObject instanceof ClassDiagramObject ? ((ClassDiagramObject) umlObject).noteView : null;
-            this.isUMLObject = true;
-        }
-    }
-
-    private enum ActionType {
-        NONE, ADDED, REMOVED
-    }
 }
