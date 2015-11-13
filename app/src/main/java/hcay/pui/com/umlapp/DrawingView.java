@@ -23,7 +23,6 @@ import android.view.MotionEvent;
 import android.graphics.PorterDuff;
 import android.util.TypedValue;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -80,6 +79,7 @@ public class DrawingView extends ViewGroup {
     private Rect clipBounds_canvas;
 
     private List<UMLObject> umlObjects;
+    private List<NoteView> notes;
 
     android.graphics.Point dispSize;
     int dispWidth;
@@ -129,6 +129,7 @@ public class DrawingView extends ViewGroup {
         points = new ArrayList<Point>();
 
         umlObjects = new ArrayList<UMLObject>();
+        notes = new ArrayList<>();
 
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
 
@@ -303,6 +304,7 @@ public class DrawingView extends ViewGroup {
         }
         // Clear the references we're managing
         umlObjects.clear();
+        notes.clear();
 
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
@@ -333,11 +335,18 @@ public class DrawingView extends ViewGroup {
                         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
                         invalidate();
 
-                        if(results.size() > 1){
+                        if (results.size() > 1) {
                             // Launch the dialog if there are options that are too close
                             generateRecognizerOptionsDialog(results, tempPoints, bounds);
-                        } else if(results.size() ==1){
-                            performGestureAction(results.get(0), bounds);
+                        } else if (results.size() == 1) {
+                            RecognizerResult result = results.get(0);
+                            if (result.gesture == Gesture.DELETE) {
+                                performDeleteAction(tempPoints);
+                            } else if (result.gesture == Gesture.PIGTAIL) {
+                                performNoteAction(tempPoints.get(0));
+                            } else {
+                                performGestureAction(result, bounds);
+                            }
                         } else {
                             Toast.makeText(DrawingView.this.getContext(),
                                     "No result",
@@ -347,6 +356,78 @@ public class DrawingView extends ViewGroup {
                 });
             }
         };
+    }
+
+    private void performDeleteAction(List<Point> points) {
+        UMLObject umlObj = getContainingUMLObject(points);
+        if (umlObj != null) {
+            removeView(umlObj.view);
+            if (umlObj instanceof ClassDiagramObject) {
+                NoteView noteView = ((ClassDiagramObject) umlObj).noteView;
+                if (noteView != null) {
+                    removeView(noteView);
+                }
+            }
+            umlObjects.remove(umlObj);
+            invalidate();
+        } else {
+            NoteView noteView = getContainingNoteView(points);
+            if (noteView != null) {
+                removeView(noteView);
+                notes.remove(noteView);
+                invalidate();
+            }
+        }
+    }
+
+    private void performNoteAction(Point firstPoint) {
+        UMLObject umlObj = getContainingUMLObject(firstPoint);
+        if (umlObj != null && umlObj instanceof ClassDiagramObject) {
+            NoteView view = (NoteView) LayoutInflater.from(getContext()).inflate(R.layout.note_layout, DrawingView.this, false);
+            view.setX(umlObj.view.getX() + umlObj.view.getMeasuredWidth() + 20);
+            view.setY(umlObj.view.getY() - 50);
+            notes.add(view);
+            ((ClassDiagramObject) umlObj).noteView = view;
+            addView(view);
+            invalidate();
+        }
+    }
+
+    private UMLObject getContainingUMLObject(List<Point> points) {
+        for (UMLObject umlObject : umlObjects) {
+            int count = 0;
+            for (Point p : points) {
+                if (isPointInsideView(p, umlObject.view))
+                    count++;
+            }
+            if ((double) count / points.size() >= 0.3) return umlObject;
+        }
+        return null;
+    }
+
+    private NoteView getContainingNoteView(List<Point> points) {
+        for (NoteView note : notes) {
+            int count = 0;
+            for (Point p : points) {
+                if (isPointInsideView(p, note))
+                    count++;
+            }
+            if ((double) count / points.size() >= 0.15) return note;
+        }
+        return null;
+    }
+
+    private UMLObject getContainingUMLObject(Point point) {
+        for (UMLObject umlObject : umlObjects) {
+            if (isPointInsideView(point, umlObject.view))
+                return umlObject;
+        }
+        return null;
+    }
+
+    private boolean isPointInsideView(Point p, View v) {
+        return p.x >= v.getX() && p.x <= (v.getX() + v.getMeasuredWidth())
+                && p.y >= v.getY() && p.y <= (v.getY() + v.getMeasuredHeight());
     }
 
     private void performGestureAction(RecognizerResult result, final Point[] bounds){

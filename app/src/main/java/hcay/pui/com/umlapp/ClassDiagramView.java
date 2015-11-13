@@ -20,6 +20,9 @@ import at.markushi.ui.CircleButton;
  */
 public class ClassDiagramView extends LinearLayout {
 
+    public FeatureAdapter memberAdapter, methodAdapter;
+    public ClassDiagramObject classDiagramObject;
+
     private final String TAG = "CLASS_DIAGRAM_VIEW";
     private float prevX, prevY;
 
@@ -34,7 +37,7 @@ public class ClassDiagramView extends LinearLayout {
 
     public void init(Context context){
         ListView memberListView = (ListView)findViewById(R.id.memberListView);
-        final FeatureAdapter memberAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), true);
+        memberAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), true);
         memberListView.setAdapter(memberAdapter);
 
         Button addMember = (Button)findViewById(R.id.addMemberBtn);
@@ -47,7 +50,7 @@ public class ClassDiagramView extends LinearLayout {
         });
 
         ListView methodListView = (ListView)findViewById(R.id.methodListView);
-        final FeatureAdapter methodAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), false);
+        methodAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), false);
         methodListView.setAdapter(methodAdapter);
 
         Button addMethod = (Button)findViewById(R.id.addMethodBtn);
@@ -75,6 +78,12 @@ public class ClassDiagramView extends LinearLayout {
                         float newY = ClassDiagramView.this.getY() + dy;
                         ClassDiagramView.this.setX(newX);
                         ClassDiagramView.this.setY(newY);
+                        if (classDiagramObject.noteView != null) {
+                            newX = classDiagramObject.noteView.getX() + dx;
+                            newY = classDiagramObject.noteView.getY() + dy;
+                            classDiagramObject.noteView.setX(newX);
+                            classDiagramObject.noteView.setY(newY);
+                        }
                         break;
                 }
                 return false;
@@ -82,10 +91,10 @@ public class ClassDiagramView extends LinearLayout {
         });
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        return ev.getX() <= getMeasuredWidth() && ev.getY() <= getMeasuredHeight();
-    }
+//    @Override
+//    public boolean onTouchEvent(MotionEvent ev) {
+//        return ev.getX() <= getMeasuredWidth() && ev.getY() <= getMeasuredHeight();
+//    }
 
     @Override
     protected void onDraw(Canvas canvas) {

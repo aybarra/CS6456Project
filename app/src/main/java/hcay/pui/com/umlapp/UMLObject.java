@@ -12,7 +12,7 @@ import hcay.pui.com.recognizer.Size;
  * Created by andrasta on 11/7/15.
  */
 public class UMLObject {
-    private View view;
+    public View view;
 
     public UMLObject(View view){
         this.view = view;
