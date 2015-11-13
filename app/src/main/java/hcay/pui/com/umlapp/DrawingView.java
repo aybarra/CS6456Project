@@ -221,6 +221,7 @@ public class DrawingView extends ViewGroup {
                         invalidate();
                     }
                     drawPath.moveTo(touchX, touchY);
+                    MainActivity.updateDeleteItem(false);
                     break;
                 case MotionEvent.ACTION_MOVE:
                     drawPath.lineTo(touchX, touchY);
@@ -269,9 +270,12 @@ public class DrawingView extends ViewGroup {
         }
 
         points.clear();
+
+        if (selectedObjects.isEmpty()) clearPath();
+        else MainActivity.updateDeleteItem(true);
     }
 
-    private void deleteSelected() {
+    public void deleteSelected() {
         ArrayList<Action> actions = new ArrayList<>();
         for (Object selectedObject : selectedObjects) {
             if (selectedObject instanceof ClassDiagramObject) {
@@ -280,13 +284,28 @@ public class DrawingView extends ViewGroup {
                 actions.add(new Action(Action.ActionType.REMOVED, classDiagramObject));
             } else if (selectedObject instanceof NoteView) {
                 NoteView noteView = (NoteView) selectedObject;
-                deleteNote(noteView);
-                actions.add(new Action(Action.ActionType.REMOVED, noteView));
+                if (noteView.getParent() != null) {
+                    deleteNote(noteView);
+                    actions.add(new Action(Action.ActionType.REMOVED, noteView));
+                }
             }
         }
         backwardHistory.add(actions);
         forwardHistory.clear();
         updateUndoRedoItems();
+        deselect();
+    }
+
+    private void deselect() {
+        MainActivity.updateDeleteItem(false);
+        selectedObjects.clear();
+        clearPath();
+    }
+
+    private void clearPath() {
+        drawPath.reset();
+        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        invalidate();
     }
 
     public void setColor(String newColor){
@@ -321,6 +340,7 @@ public class DrawingView extends ViewGroup {
             drawPaint.setPathEffect(dashEffect);
         } else {
             // Otherwise we wanna clear the drawpath
+            drawPaint.setPathEffect(null);
             drawPath.reset();
             drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         }
@@ -418,7 +438,7 @@ public class DrawingView extends ViewGroup {
         if (umlObject instanceof ClassDiagramObject) {
             NoteView noteView = ((ClassDiagramObject) umlObject).noteView;
             if (noteView != null) {
-                removeView(noteView);
+                deleteNote(noteView);
             }
         }
         umlObjects.remove(umlObject);
@@ -816,6 +836,7 @@ public class DrawingView extends ViewGroup {
     }
 
     public void undoOrRedo(boolean undo) {
+        if (selectionEnabled) deselect();
         ArrayList<ArrayList<Action>> history = undo ? backwardHistory : forwardHistory;
         ArrayList<Action> actions = processActions(history.remove(history.size() - 1));
         if (undo) forwardHistory.add(actions);
