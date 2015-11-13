@@ -43,11 +43,11 @@
             android:contentDescription="@string/select"
             android:src="@mipmap/selection_icon" />
 
-        <ImageButton
-            android:id="@+id/save_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:contentDescription="@string/save"
-            android:src="@drawable/save" />
+        <!--<ImageButton-->
+            <!--android:id="@+id/save_btn"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="fill_parent"-->
+            <!--android:contentDescription="@string/save"-->
+            <!--android:src="@drawable/save" />-->
     </LinearLayout>
 </LinearLayout>

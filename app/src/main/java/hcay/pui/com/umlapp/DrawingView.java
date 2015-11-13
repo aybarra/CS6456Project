@@ -81,10 +81,6 @@ public class DrawingView extends ViewGroup {
     private List<UMLObject> umlObjects;
     private List<NoteView> notes;
 
-    android.graphics.Point dispSize;
-    int dispWidth;
-    int dispHeight;
-
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing(context);
@@ -191,18 +187,18 @@ public class DrawingView extends ViewGroup {
         }
     }
 
-    private void drawEndlessBackground(Canvas canvas, float left, float top) {
-
-        float modLeft = left % dispWidth;
-
-        canvas.drawBitmap(canvasBitmap, modLeft, top, null);
-
-        if (left < 0) {
-            canvas.drawBitmap(canvasBitmap, modLeft + dispWidth, top, null);
-        } else {
-            canvas.drawBitmap(canvasBitmap, modLeft - dispWidth, top, null);
-        }
-    }
+//    private void drawEndlessBackground(Canvas canvas, float left, float top) {
+//
+//        float modLeft = left % dispWidth;
+//
+//        canvas.drawBitmap(canvasBitmap, modLeft, top, null);
+//
+//        if (left < 0) {
+//            canvas.drawBitmap(canvasBitmap, modLeft + dispWidth, top, null);
+//        } else {
+//            canvas.drawBitmap(canvasBitmap, modLeft - dispWidth, top, null);
+//        }
+//    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -499,13 +495,14 @@ public class DrawingView extends ViewGroup {
             }
 
             RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
-            view.init(DrawingView.this.getContext(), objectSrc, objectDst, orientation);
+            view.init(DrawingView.this.getContext(), objectSrc, objectDst, orientation, result.gesture);
 
             // TODO: Figure out the placement
             android.graphics.Point location = getPlacementLocation(orientation, objectSrc);
             view.setX((float) location.x);
             view.setY((float) location.y);
-            Toast.makeText(getContext(), "Placement of relationship is: " + location.x + ", " + location.y, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Placement of relationship is: " + location.x
+                                       + ", " + location.y, Toast.LENGTH_SHORT).show();
 
 
             // TODO: Need to figure out the size to make the relationship
@@ -554,7 +551,8 @@ public class DrawingView extends ViewGroup {
                 if(disregard != null && obj.equals(disregard)){
                     continue;
                 }
-                double ptDistance = Math.sqrt(Math.pow((obj.getLocation().x - target.x),2) + Math.pow((obj.getLocation().y - target.y),2));
+                double ptDistance = Math.sqrt(Math.pow((obj.getLocation().x - target.x),2)
+                                  + Math.pow((obj.getLocation().y - target.y),2));
                 if(ptDistance < distance){
                     distance = ptDistance;
                     minIndex = i;
