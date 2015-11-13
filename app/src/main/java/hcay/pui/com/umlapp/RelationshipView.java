@@ -20,16 +20,16 @@ import hcay.pui.com.recognizer.Size;
  */
 public class RelationshipView extends View {
 
-    private View entity1;
-    private View entity2;
+    private ClassDiagramObject cdoSrc;
+    private ClassDiagramObject cdoDst;
     private final String TAG = "LineObject_DIAGRAM";
 
     private Paint mPaint;
-    public RelationshipView(Context context, View entity1, View entity2){
+    public RelationshipView(Context context, ClassDiagramObject cdoSrc, ClassDiagramObject cdoDst){
         super(context);
 
-        this.entity1 = entity1;
-        this.entity2 = entity2;
+        this.cdoSrc = cdoSrc;
+        this.cdoDst = cdoDst;
 
         init(context);
     }
@@ -49,9 +49,8 @@ public class RelationshipView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        android.graphics.Point p1 = new android.graphics.Point((int)entity1.getX(), (int)entity1.getY());
-        android.graphics.Point p2 = new android.graphics.Point((int)entity2.getX(), (int)entity2.getY());
-
+        android.graphics.Point p1 = new android.graphics.Point(cdoSrc.getLocation().x, cdoSrc.getLocation().y);
+        android.graphics.Point p2 = new android.graphics.Point(cdoDst.getLocation().x, cdoDst.getLocation().y);
         canvas.drawLine(p1.x, p1.y, p2.x, p2.y, mPaint);
     }
 }

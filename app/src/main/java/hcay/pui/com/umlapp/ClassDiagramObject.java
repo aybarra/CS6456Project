@@ -13,10 +13,15 @@ import hcay.pui.com.recognizer.Size;
 public class ClassDiagramObject extends UMLObject {
 
     private List<Tuple> relationships;
+    private List<String> memberVars;
+    private List<String> methods;
+
     public ClassDiagramObject(ClassDiagramView view){
         super(view);
 
-        relationships = new ArrayList<Tuple>();
+        relationships = new ArrayList<>();
+        memberVars = new ArrayList<>();
+        methods = new ArrayList<>();
     }
 
     private class Tuple<UMLObject, Side> {

@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -22,6 +23,7 @@ import android.view.MotionEvent;
 import android.graphics.PorterDuff;
 import android.util.TypedValue;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -79,6 +81,10 @@ public class DrawingView extends ViewGroup {
 
     private List<UMLObject> umlObjects;
 
+    android.graphics.Point dispSize;
+    int dispWidth;
+    int dispHeight;
+
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing(context);
@@ -125,6 +131,12 @@ public class DrawingView extends ViewGroup {
         umlObjects = new ArrayList<UMLObject>();
 
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
+
+//        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+//        Display display = wm.getDefaultDisplay();
+//        display.getSize(dispSize);
+//        dispWidth = dispSize.x;
+//        dispHeight = dispSize.y;
     }
 
     @Override
@@ -162,6 +174,8 @@ public class DrawingView extends ViewGroup {
         // Original
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
+        // STACKOVERFLOW ATTEMPT
+//        drawEndlessBackground(canvas, this.getLeft(), this.getTop());
 //        Rect rectangle = canvas.getClipBounds();
 //        float val = 1/mScaleFactor;
 //        RectF dst = new RectF(rectangle.left*val, rectangle.top*val, rectangle.right*val, rectangle.bottom*val);
@@ -173,6 +187,19 @@ public class DrawingView extends ViewGroup {
             makeEffect();
             phase += 1;
             invalidate();
+        }
+    }
+
+    private void drawEndlessBackground(Canvas canvas, float left, float top) {
+
+        float modLeft = left % dispWidth;
+
+        canvas.drawBitmap(canvasBitmap, modLeft, top, null);
+
+        if (left < 0) {
+            canvas.drawBitmap(canvasBitmap, modLeft + dispWidth, top, null);
+        } else {
+            canvas.drawBitmap(canvasBitmap, modLeft - dispWidth, top, null);
         }
     }
 
@@ -189,6 +216,7 @@ public class DrawingView extends ViewGroup {
 
         if(event.getPointerCount() > 1) {
             mScaleDetector.onTouchEvent(event);
+
             return true;
         } else {
             switch (event.getAction()) {
@@ -336,8 +364,21 @@ public class DrawingView extends ViewGroup {
             umlObjects.add(new ClassDiagramObject(view));
             DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
         } else if(result.gesture == Gesture.UNSPECIFIED) {
-            // Figure out the two closest classfiers
-            // Need to fetch the right and left most points, top and bottom
+//            // TODO: Figure out the two closest classfiers by index
+//            ClassDiagramObject objectSrc = (ClassDiagramObject)umlObjects.get(0);
+//            ClassDiagramObject objectDst = (ClassDiagramObject)umlObjects.get(1);
+//            RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
+//
+//            // TODO: Figure out the placement
+//            view.setX((float) leftMost.x);
+//            view.setY((float) topMost.y);
+//
+//            // TODO: Need to figure out the size to make the relationship
+//            Size relationshipSize = new Size(objectDst.getLocation().x - objectSrc.getLocation().x, );
+//
+//            // For testing
+//            RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst);
+//            // Need to fetch the right and left most points, top and bottom
         }
         Toast.makeText(DrawingView.this.getContext(),
                 "Results were size 1, gesture="+ result.gesture.toString(),
