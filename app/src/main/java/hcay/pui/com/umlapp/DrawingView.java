@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -58,8 +59,7 @@ public class DrawingView extends ViewGroup {
     private float brushSize, lastBrushSize;
     private boolean selectionEnabled =false;
 
-    static float phase;
-    private static PathEffect pe;
+    private PathEffect dashEffect = new DashPathEffect(new float[] {30,60}, 0);
 
     Recognizer recognizer;
     ArrayList<Point> points;
@@ -80,6 +80,7 @@ public class DrawingView extends ViewGroup {
 
     private List<UMLObject> umlObjects;
     private List<NoteView> notes;
+    private List<Object> selectedObjects = new ArrayList<>();
 
     android.graphics.Point dispSize;
     int dispWidth;
@@ -149,13 +150,6 @@ public class DrawingView extends ViewGroup {
         super.onSizeChanged(w, h, oldw, oldh);
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
-//        if(drawCanvas != null){
-//            drawCanvas
-//        }
-    }
-
-    private static void makeEffect(){
-        pe = new DashPathEffect(new float[] {10, 5, 5, 5}, phase);
     }
 
     @Override
@@ -186,12 +180,6 @@ public class DrawingView extends ViewGroup {
 //        canvas.drawBitmap(canvasBitmap, null, dst, drawPaint);
 
         canvas.drawPath(drawPath, drawPaint);
-
-        if(selectionEnabled){
-            makeEffect();
-            phase += 1;
-            invalidate();
-        }
     }
 
     private void drawEndlessBackground(Canvas canvas, float left, float top) {
@@ -220,7 +208,6 @@ public class DrawingView extends ViewGroup {
 
         if(event.getPointerCount() > 1) {
             mScaleDetector.onTouchEvent(event);
-
             return true;
         } else {
             switch (event.getAction()) {
@@ -229,6 +216,12 @@ public class DrawingView extends ViewGroup {
                     if(timer!=null){
                         stopTimer();
                     }
+                    if (selectionEnabled) {
+                        selectedObjects.clear();
+                        drawPath.reset();
+                        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+                        invalidate();
+                    }
                     drawPath.moveTo(touchX, touchY);
                     break;
                 case MotionEvent.ACTION_MOVE:
@@ -236,6 +229,11 @@ public class DrawingView extends ViewGroup {
                     points.add(new Point(touchX, touchY, strokeCounter));
                     break;
                 case MotionEvent.ACTION_UP:
+                    if (points.size() == 0) break;
+                    if (selectionEnabled) {
+                        drawPath.lineTo((float) points.get(0).x, (float) points.get(0).y);
+                        points.add(points.get(0));
+                    }
                     drawCanvas.drawPath(drawPath, drawPaint);
                     strokeCounter++;
 
@@ -244,7 +242,7 @@ public class DrawingView extends ViewGroup {
                         // set the timer for the recognizer to be called
                         startTimer();
                     } else {
-                        invalidate();
+                        performSelection();
                     }
 
                     break;
@@ -255,6 +253,85 @@ public class DrawingView extends ViewGroup {
             invalidate();
             return true;
         }
+    }
+
+    private void performSelection() {
+        Ellipse ellipse = new Ellipse(points);
+
+        for (UMLObject umlObject : umlObjects) {
+            if (ellipse.contains(umlObject.view)) {
+                selectedObjects.add(umlObject);
+            }
+        }
+
+        for (NoteView noteView : notes) {
+            if (ellipse.contains(noteView)) {
+                selectedObjects.add(noteView);
+            }
+        }
+
+        points.clear();
+    }
+
+    private class Ellipse {
+        private float x, y, width, height;
+
+        public Ellipse(List<Point> points) {
+            float minX, maxX, minY, maxY;
+            minX = minY = Float.MAX_VALUE;
+            maxX = maxY = Float.MIN_VALUE;
+
+            for (Point p : points) {
+                minX = Math.min(minX, (float) p.x);
+                maxX = Math.max(maxX, (float) p.x);
+                minY = Math.min(minY, (float) p.y);
+                maxY = Math.max(maxY, (float) p.y);
+            }
+
+            this.x = minX;
+            this.y = minY;
+            this.width = maxX - minX + 1;
+            this.height = maxY - minY + 1;
+        }
+
+        public float getX() {
+            return x;
+        }
+
+        public float getY() {
+            return y;
+        }
+
+        public float getWidth() {
+            return width;
+        }
+
+        public float getHeight() {
+            return height;
+        }
+
+        public boolean contains(Point p) {
+            double a = (p.x - x) / width - 0.5;
+            double b = (p.y - y) / height - 0.5;
+            return a * a + b * b < 0.25;
+        }
+
+        public boolean contains(RectF rect) {
+            return contains(new Point(rect.left, rect.top))
+                    && contains(new Point(rect.right, rect.top))
+                    && contains(new Point(rect.left, rect.bottom))
+                    && contains(new Point(rect.right, rect.bottom));
+        }
+
+        public boolean contains(View view) {
+            return contains(new RectF(view.getX(), view.getY(), view.getX() + view.getMeasuredWidth(), view.getY() + view.getMeasuredHeight()));
+        }
+    }
+
+    private boolean contains(float x, float y, float width, float height, Point p) {
+        double a = (p.x - x) / width - 0.5;
+        double b = (p.y - y) / height - 0.5;
+        return a * a + b * b < 0.25;
     }
 
     public void setColor(String newColor){
@@ -283,10 +360,10 @@ public class DrawingView extends ViewGroup {
 
     public void setSelectionEnabled(boolean isSelecting){
         //set selectionEnabled true or false
-        selectionEnabled =isSelecting;
+        selectionEnabled = isSelecting;
 
-        if(selectionEnabled){
-            drawPaint.setPathEffect(pe);
+        if (selectionEnabled) {
+            drawPaint.setPathEffect(dashEffect);
         } else {
             // Otherwise we wanna clear the drawpath
             drawPath.reset();
@@ -308,6 +385,7 @@ public class DrawingView extends ViewGroup {
         // Clear the references we're managing
         umlObjects.clear();
         notes.clear();
+        selectedObjects.clear();
         backwardHistory.clear();
         forwardHistory.clear();
         updateUndoRedoItems();
