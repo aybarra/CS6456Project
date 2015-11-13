@@ -465,26 +465,165 @@ public class DrawingView extends ViewGroup {
             addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
             backwardHistory.add(new Action(ActionType.ADDED, classDiagramObject));
             forwardHistory.clear();
-        } else if(result.gesture == Gesture.UNSPECIFIED) {
-//            // TODO: Figure out the two closest classfiers by index
-//            ClassDiagramObject objectSrc = (ClassDiagramObject)umlObjects.get(0);
-//            ClassDiagramObject objectDst = (ClassDiagramObject)umlObjects.get(1);
-//            RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
-//
-//            // TODO: Figure out the placement
-//            view.setX((float) leftMost.x);
-//            view.setY((float) topMost.y);
-//
-//            // TODO: Need to figure out the size to make the relationship
-//            Size relationshipSize = new Size(objectDst.getLocation().x - objectSrc.getLocation().x, );
-//
-//            // For testing
-//            RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst);
-//            // Need to fetch the right and left most points, top and bottom
+        } else if(result.gesture == Gesture.NAVIGABLE || result.gesture == Gesture.AGGREGATION
+                || result.gesture == Gesture.GENERALIZATION || result.gesture == Gesture.REALIZATION
+                || result.gesture == Gesture.COMPOSITION || result.gesture == Gesture.DEPENDENCY
+                || result.gesture == Gesture.REALIZATION_DEPENDENCY || result.gesture == Gesture.REQUIRED) {
+
+            GestureOrientation orientation = getGestureOrientation(bounds);
+            Log.i(TAG, "Gesture orientation is: " + orientation.toString());
+
+            // TODO: Figure out the two closest classfiers by index
+            ClassDiagramObject objectSrc;
+            ClassDiagramObject objectDst;
+            if(orientation == GestureOrientation.LEFT_TO_RIGHT || orientation == GestureOrientation.RIGHT_TO_LEFT) {
+                int left = findClosestTo(leftMost, null);
+                if(left == -1){
+                    Toast.makeText(getContext(), "No class diagrams made yet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int right = findClosestTo(rightMost, umlObjects.get(left));
+                if(right == -1){
+                    Toast.makeText(getContext(), "Need two class diagrams to make a relationship", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Perform set based on orientation
+                if(orientation == GestureOrientation.LEFT_TO_RIGHT){
+                    objectSrc = (ClassDiagramObject)umlObjects.get(left);
+                    objectDst = (ClassDiagramObject)umlObjects.get(right);
+                } else {
+                    objectDst = (ClassDiagramObject)umlObjects.get(left);
+                    objectSrc = (ClassDiagramObject)umlObjects.get(right);
+                }
+            } else {
+                int top = findClosestTo(topMost, null);
+                if(top == -1){
+                    Toast.makeText(getContext(), "No class diagrams made yet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int bottom = findClosestTo(bottomMost, umlObjects.get(top));
+                if(bottom == -1){
+                    Toast.makeText(getContext(), "Need two class diagrams to make a relationship", Toast.LENGTH_SHORT).show();
+                }
+
+                // Perform set based on orientation
+                if(orientation == GestureOrientation.TOP_TO_BOTTOM){
+                    objectSrc = (ClassDiagramObject)umlObjects.get(top);
+                    objectDst = (ClassDiagramObject)umlObjects.get(bottom);
+                } else {
+                    objectDst = (ClassDiagramObject)umlObjects.get(top);
+                    objectSrc = (ClassDiagramObject)umlObjects.get(bottom);
+                }
+            }
+
+            RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
+            view.init(DrawingView.this.getContext(), objectSrc, objectDst, orientation);
+
+            // TODO: Figure out the placement
+            android.graphics.Point location = getPlacementLocation(orientation, objectSrc);
+            view.setX((float) location.x);
+            view.setY((float) location.y);
+            Toast.makeText(getContext(), "Placement of relationship is: " + location.x + ", " + location.y, Toast.LENGTH_SHORT).show();
+
+
+            // TODO: Need to figure out the size to make the relationship
+            Size relationshipSize = new Size((int)Math.abs(leftMost.x-rightMost.x), (int)Math.abs(topMost.y-bottomMost.y));
+            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
+            RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst, result.gesture);
+            DrawingView.this.addView(view, new LinearLayout.LayoutParams(relationshipSize.getWidth(), relationshipSize.getHeight()));
+            umlObjects.add(relationship);
         }
         Toast.makeText(DrawingView.this.getContext(),
                 "Results were size 1, gesture="+ result.gesture.toString(),
                 Toast.LENGTH_SHORT).show();
+    }
+
+    public android.graphics.Point getPlacementLocation(GestureOrientation orientation, UMLObject src){
+        int height = src.getSize().getHeight();
+        int width = src.getSize().getWidth();
+        android.graphics.Point location = src.getLocation();
+        if(orientation == GestureOrientation.LEFT_TO_RIGHT){
+            location.x += width;
+            location.y += height/2;
+        } else if(orientation == GestureOrientation.RIGHT_TO_LEFT){
+            location.y += height/2;
+        } else if(orientation == GestureOrientation.TOP_TO_BOTTOM){
+            location.x += width/2;
+            location.y += height;
+        } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
+            location.x += width/2;
+        }
+        return location;
+    }
+    /**
+     *
+     * @param target - Target location we want to be close to
+     * @param disregard - In case this is called in succession, you can look at all except disregard
+     * @return - index of uml object in our umlobjects arraylist, -1 if there is none
+     */
+    public int findClosestTo(Point target, UMLObject disregard){
+
+        double distance = Double.MAX_VALUE;
+        int minIndex = -1;
+        // Only care about classDiagrams so disregard the other relationships
+        for(int i = 0; i < umlObjects.size(); i++){
+            UMLObject obj = umlObjects.get(i);
+            if(obj instanceof ClassDiagramObject){
+                if(disregard != null && obj.equals(disregard)){
+                    continue;
+                }
+                double ptDistance = Math.sqrt(Math.pow((obj.getLocation().x - target.x),2) + Math.pow((obj.getLocation().y - target.y),2));
+                if(ptDistance < distance){
+                    distance = ptDistance;
+                    minIndex = i;
+                }
+            }
+        }
+        return minIndex;
+    }
+    /**
+     *
+     * @param bounds
+     * @return
+     */
+    public GestureOrientation getGestureOrientation(Point [] bounds){
+        double midX;
+        double midY;
+
+        //{ left, right, top, bottom }
+        // Need to figure out which is longer
+        if(Math.abs(bounds[1].x-bounds[0].x) > Math.abs(bounds[2].y-bounds[3].y)){
+            // right-left is longer
+            // Figure out which direction its pointing
+            midX = (bounds[0].x + bounds[1].x)/2;
+            // This says the point is on the left
+            //     top
+            // left <-----|---------
+            //     bottom
+            if(bounds[0].x < midX && bounds[2].x < midX && bounds[3].x < midX){
+                return GestureOrientation.RIGHT_TO_LEFT;
+            } else {
+                return GestureOrientation.LEFT_TO_RIGHT;
+            }
+        } else{
+            // top-bottom is longer
+            midY = (bounds[2].y + bounds[3].y)/2;
+            // Figure out which direction its pointing
+            // Similarly
+            //      |
+            //      |
+            //    -----
+            //      |
+            //      |
+            // left V right
+            //    bottom
+            if(bounds[0].y > midY && bounds[1].y > midY && bounds[3].y > midY){
+                return GestureOrientation.TOP_TO_BOTTOM;
+            } else{
+                return GestureOrientation.BOTTOM_TO_TOP;
+            }
+        }
     }
 
     public void startTimer() {

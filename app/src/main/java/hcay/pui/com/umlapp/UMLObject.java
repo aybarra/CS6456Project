@@ -23,7 +23,7 @@ public class UMLObject {
     }
 
     public Size getSize(){
-        return new Size(view.getWidth(), view.getHeight());
+        return new Size(view.getMeasuredWidth(), view.getMeasuredHeight());
     }
 
 }
