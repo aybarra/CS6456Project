@@ -23,7 +23,6 @@ import android.view.MotionEvent;
 import android.graphics.PorterDuff;
 import android.util.TypedValue;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -337,7 +336,16 @@ public class DrawingView extends ViewGroup {
                             // Launch the dialog if there are options that are too close
                             generateRecognizerOptionsDialog(results, tempPoints, bounds);
                         } else if(results.size() ==1){
-                            performGestureAction(results.get(0), bounds);
+                            if (results.get(0).gesture == Gesture.DELETE) {
+                                UMLObject umlObj = getContainingUMLObject(tempPoints);
+                                if (umlObj != null) {
+                                    removeView(umlObj.view);
+                                    umlObjects.remove(umlObj);
+                                    invalidate();
+                                }
+                            } else {
+                                performGestureAction(results.get(0), bounds);
+                            }
                         } else {
                             Toast.makeText(DrawingView.this.getContext(),
                                     "No result",
@@ -347,6 +355,23 @@ public class DrawingView extends ViewGroup {
                 });
             }
         };
+    }
+
+    private UMLObject getContainingUMLObject(List<Point> points) {
+        for (UMLObject umlObject : umlObjects) {
+            int count = 0;
+            for (Point p : points) {
+                if (isPointInsideView(p, umlObject.view))
+                    count++;
+            }
+            if ((double) count / points.size() >= 0.3) return umlObject;
+        }
+        return null;
+    }
+
+    private boolean isPointInsideView(Point p, View v) {
+        return p.x >= v.getX() && p.x <= (v.getX() + v.getMeasuredWidth())
+                && p.y >= v.getY() && p.y <= (v.getY() + v.getMeasuredHeight());
     }
 
     private void performGestureAction(RecognizerResult result, final Point[] bounds){
@@ -362,7 +387,7 @@ public class DrawingView extends ViewGroup {
             view.setX((float) leftMost.x);
             view.setY((float) topMost.y);
             umlObjects.add(new ClassDiagramObject(view));
-            DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
+            addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
         } else if(result.gesture == Gesture.UNSPECIFIED) {
 //            // TODO: Figure out the two closest classfiers by index
 //            ClassDiagramObject objectSrc = (ClassDiagramObject)umlObjects.get(0);
