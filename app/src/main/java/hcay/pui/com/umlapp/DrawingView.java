@@ -85,6 +85,9 @@ public class DrawingView extends ViewGroup {
     int dispWidth;
     int dispHeight;
 
+    private ArrayList<Action> backwardHistory = new ArrayList<>();
+    private ArrayList<Action> forwardHistory = new ArrayList<>();
+
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing(context);
@@ -361,23 +364,36 @@ public class DrawingView extends ViewGroup {
     private void performDeleteAction(List<Point> points) {
         UMLObject umlObj = getContainingUMLObject(points);
         if (umlObj != null) {
-            removeView(umlObj.view);
-            if (umlObj instanceof ClassDiagramObject) {
-                NoteView noteView = ((ClassDiagramObject) umlObj).noteView;
-                if (noteView != null) {
-                    removeView(noteView);
-                }
-            }
-            umlObjects.remove(umlObj);
-            invalidate();
+            deleteUMLObject(umlObj);
+            backwardHistory.add(new Action(ActionType.REMOVED, umlObj));
         } else {
             NoteView noteView = getContainingNoteView(points);
             if (noteView != null) {
-                removeView(noteView);
-                notes.remove(noteView);
-                invalidate();
+                deleteNote(noteView);
+                backwardHistory.add(new Action(ActionType.REMOVED, noteView));
             }
         }
+        forwardHistory.clear();
+    }
+
+    private UMLObject deleteUMLObject(UMLObject umlObject) {
+        removeView(umlObject.view);
+        if (umlObject instanceof ClassDiagramObject) {
+            NoteView noteView = ((ClassDiagramObject) umlObject).noteView;
+            if (noteView != null) {
+                removeView(noteView);
+            }
+        }
+        umlObjects.remove(umlObject);
+        invalidate();
+        return umlObject;
+    }
+
+    private NoteView deleteNote(NoteView noteView) {
+        removeView(noteView);
+        notes.remove(noteView);
+        invalidate();
+        return noteView;
     }
 
     private void performNoteAction(Point firstPoint) {
@@ -390,6 +406,8 @@ public class DrawingView extends ViewGroup {
             ((ClassDiagramObject) umlObj).noteView = view;
             addView(view);
             invalidate();
+            backwardHistory.add(new Action(ActionType.ADDED, view));
+            forwardHistory.clear();
         }
     }
 
@@ -405,6 +423,14 @@ public class DrawingView extends ViewGroup {
         return null;
     }
 
+    private UMLObject getContainingUMLObject(Point point) {
+        for (UMLObject umlObject : umlObjects) {
+            if (isPointInsideView(point, umlObject.view))
+                return umlObject;
+        }
+        return null;
+    }
+
     private NoteView getContainingNoteView(List<Point> points) {
         for (NoteView note : notes) {
             int count = 0;
@@ -413,14 +439,6 @@ public class DrawingView extends ViewGroup {
                     count++;
             }
             if ((double) count / points.size() >= 0.15) return note;
-        }
-        return null;
-    }
-
-    private UMLObject getContainingUMLObject(Point point) {
-        for (UMLObject umlObject : umlObjects) {
-            if (isPointInsideView(point, umlObject.view))
-                return umlObject;
         }
         return null;
     }
@@ -442,8 +460,11 @@ public class DrawingView extends ViewGroup {
             view.init(DrawingView.this.getContext());
             view.setX((float) leftMost.x);
             view.setY((float) topMost.y);
-            umlObjects.add(new ClassDiagramObject(view));
+            UMLObject classDiagramObject = new ClassDiagramObject(view);
+            umlObjects.add(classDiagramObject);
             addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
+            backwardHistory.add(new Action(ActionType.ADDED, classDiagramObject));
+            forwardHistory.clear();
         } else if(result.gesture == Gesture.UNSPECIFIED) {
 //            // TODO: Figure out the two closest classfiers by index
 //            ClassDiagramObject objectSrc = (ClassDiagramObject)umlObjects.get(0);
@@ -614,5 +635,61 @@ public class DrawingView extends ViewGroup {
             invalidate();
             return true;
         }
+    }
+
+    private void undoOrRedo(boolean undo) {
+        ArrayList<Action> history = undo ? backwardHistory : forwardHistory;
+        Action action = processAction(history.remove(history.size() - 1));
+        if (undo) forwardHistory.add(action);
+        else backwardHistory.add(action);
+    }
+
+    private Action processAction(Action action) {
+        switch (action.type) {
+            case ADDED:
+                if (action.isUMLObject) deleteUMLObject(action.umlObject);
+                else deleteNote(action.noteView);
+                action.type = ActionType.REMOVED;
+                break;
+            case REMOVED:
+                if (action.isUMLObject) {
+                    umlObjects.add(action.umlObject);
+                    addView(action.umlObject.view);
+                }
+                if (action.noteView != null) {
+                    notes.add(action.noteView);
+                    addView(action.noteView);
+                }
+                invalidate();
+                action.type = ActionType.ADDED;
+                break;
+            case NONE:
+                break;
+        }
+        return action;
+    }
+
+    private class Action {
+        public ActionType type = ActionType.NONE;
+        public NoteView noteView;
+        public UMLObject umlObject;
+        public boolean isUMLObject;
+
+        public Action(ActionType type, NoteView noteView) {
+            this.type = type;
+            this.noteView = noteView;
+            this.isUMLObject = false;
+        }
+
+        public Action(ActionType type, UMLObject umlObject) {
+            this.type = type;
+            this.umlObject = umlObject;
+            this.noteView = umlObject instanceof ClassDiagramObject ? ((ClassDiagramObject) umlObject).noteView : null;
+            this.isUMLObject = true;
+        }
+    }
+
+    private enum ActionType {
+        NONE, ADDED, REMOVED
     }
 }
