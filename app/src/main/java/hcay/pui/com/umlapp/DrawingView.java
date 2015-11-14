@@ -99,6 +99,8 @@ public class DrawingView extends ViewGroup {
     private ArrayList<ArrayList<Action>> backwardHistory = new ArrayList<>();
     private ArrayList<ArrayList<Action>> forwardHistory = new ArrayList<>();
 
+    private boolean isViewMode = false;
+
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing(context);
@@ -120,6 +122,18 @@ public class DrawingView extends ViewGroup {
             View childView = getChildAt(i);
             measureChild(childView, widthMeasureSpec, heightMeasureSpec);
         }
+    }
+
+    public void switchMode() {
+        isViewMode = !isViewMode;
+        for (UMLObject umlObject : umlObjects) {
+            if (umlObject instanceof ClassDiagramObject) {
+                ((ClassDiagramView) umlObject.view).changeMode(isViewMode);
+                if (((ClassDiagramObject) umlObject).noteView != null)
+                    ((ClassDiagramObject) umlObject).noteView.setVisibility(isViewMode ? GONE : VISIBLE);
+            }
+        }
+        MainActivity.viewItem.getIcon().setAlpha(isViewMode ? 255 : 200);
     }
 
     private void setupDrawing(Context context){
@@ -199,6 +213,7 @@ public class DrawingView extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (isViewMode) return true;
 
         // Original
         float touchX = event.getX();
@@ -230,31 +245,7 @@ public class DrawingView extends ViewGroup {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (moving) {
-                        float dx = touchX - (float) originalPoint.x;
-                        float dy = touchY - (float) originalPoint.y;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                            drawPath.offset(dx, dy);
-                        } else {
-                            offsetPath(dx, dy);
-                        }
-                        originalPoint = new Point(touchX, touchY);
-                        for (Object selectedObject : selectedObjects) {
-                            if (selectedObject instanceof ClassDiagramObject) {
-                                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
-                                float newX = classDiagramObject.view.getX() + dx;
-                                float newY = classDiagramObject.view.getY() + dy;
-                                classDiagramObject.view.setX(newX);
-                                classDiagramObject.view.setY(newY);
-                                if (classDiagramObject.noteView != null) {
-                                    newX = classDiagramObject.noteView.getX() + dx;
-                                    newY = classDiagramObject.noteView.getY() + dy;
-                                    classDiagramObject.noteView.setX(newX);
-                                    classDiagramObject.noteView.setY(newY);
-                                }
-                            } else if (selectedObject instanceof NoteView) {
-                                NoteView noteView = (NoteView) selectedObject;
-                            }
-                        }
+                        moveSelection(touchX, touchY);
                     } else {
                         drawPath.lineTo(touchX, touchY);
                         points.add(new Point(touchX, touchY, strokeCounter));
@@ -287,6 +278,35 @@ public class DrawingView extends ViewGroup {
 
             invalidate();
             return true;
+        }
+    }
+
+    private void moveSelection(float x, float y) {
+        float dx = x - (float) originalPoint.x;
+        float dy = y - (float) originalPoint.y;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            drawPath.offset(dx, dy);
+        } else {
+            offsetPath(dx, dy);
+        }
+        originalPoint = new Point(x, y);
+        for (Object selectedObject : selectedObjects) {
+            if (selectedObject instanceof ClassDiagramObject) {
+                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
+                float newX = classDiagramObject.view.getX() + dx;
+                float newY = classDiagramObject.view.getY() + dy;
+                classDiagramObject.view.setX(newX);
+                classDiagramObject.view.setY(newY);
+                if (classDiagramObject.noteView != null) {
+                    newX = classDiagramObject.noteView.getX() + dx;
+                    newY = classDiagramObject.noteView.getY() + dy;
+                    classDiagramObject.noteView.setX(newX);
+                    classDiagramObject.noteView.setY(newY);
+                }
+            } else if (selectedObject instanceof NoteView) {
+                NoteView noteView = (NoteView) selectedObject;
+                // TODO: moving noteViews separately?
+            }
         }
     }
 
