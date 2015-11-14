@@ -71,9 +71,6 @@ public class DrawingView extends ViewGroup {
 
     final Handler handler = new Handler();
 
-    private ScaleGestureDetector mScaleDetector;
-    private float mScaleFactor = 1.f;
-
     private List<UMLObject> umlObjects;
     private List<NoteView> notes;
     private List<Object> selectedObjects = new ArrayList<>();
@@ -97,6 +94,13 @@ public class DrawingView extends ViewGroup {
     private ArrayList<ArrayList<Action>> forwardHistory = new ArrayList<>();
 
     private boolean isViewMode = false;
+
+    private GestureMode gestureMode = GestureMode.NONE;
+    private ScaleGestureDetector scaleDetector;
+    private float scaleFactor = 1.f;
+    private float prevX = 0;
+    private float prevY = 0;
+    private boolean dragged = false;
 
     private final int CLASSIFIER_MIN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics());
 
@@ -158,8 +162,7 @@ public class DrawingView extends ViewGroup {
         umlObjects = new ArrayList<UMLObject>();
         notes = new ArrayList<>();
 
-        mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
-
+        scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
     }
 
     @Override
@@ -175,55 +178,74 @@ public class DrawingView extends ViewGroup {
         super.onDraw(canvas);
 
         canvas.save();
-
-        float x = 0, y = 0;
-        x = mPosX + mPosX0;
-        y = mPosY + mPosY0;
-
-        // Original
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
-
         canvas.drawPath(drawPath, drawPaint);
+        canvas.restore();
+    }
 
-        /*
-        // New stuff
-        if (mScaleDetector.isInProgress()) {
-            // Pinch zoom is in progress
-            // if (mSupportsPan) canvas.translate(mPosX, mPosY);
-            mFocusX = mScaleDetector.getFocusX();
-            mFocusY = mScaleDetector.getFocusY();
-            canvas.scale(mScaleFactor, mScaleFactor, mFocusX, mFocusY);
-            Log.d ("Multitouch", "+p+z x, y, focusX, focusY: " + x + " " + y + " " + mFocusX + " " + mFocusY);
-        } else {
-            // Pinch zoom is not in progress. Just do translation of canvas at whatever the current scale is.
-            canvas.translate(x, y);
-            canvas.scale(mScaleFactor, mScaleFactor);
-            Log.d ("Multitouch", "+p+z x, y : " + x + " " + y);
-        }*/
-
-        // Old stuff
-//        if(selectionEnabled){
-//            makeEffect();
-//            phase += 1;
-//            invalidate();
-//        }
-//        canvas.restore();
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            scaleFactor *= detector.getScaleFactor();
+            scaleFactor = Math.max(0.5f, Math.min(scaleFactor, 5f));
+            setScaleX(scaleFactor);
+            setScaleY(scaleFactor);
+            return true;
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (isViewMode) return true;
-
         // Original
         float touchX = event.getX();
         float touchY = event.getY();
 
-        if(event.getPointerCount() > 1) {
-            mScaleDetector.onTouchEvent(event);
+        if (event.getPointerCount() == 2) {
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    gestureMode = GestureMode.DRAG;
+                    prevX = event.getX();
+                    prevY = event.getY();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    clearPath();
+
+                    float dx = event.getX() - prevX;
+                    float dy = event.getY() - prevY;
+                    if (dx > 0 || dy > 0) dragged = true;
+
+                    if (dragged) {
+                        setX(getX() + dx);
+                        setY(getY() + dy);
+                    }
+
+                    break;
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    gestureMode = GestureMode.ZOOM;
+                    break;
+                case MotionEvent.ACTION_UP:
+                    gestureMode = GestureMode.NONE;
+                    dragged = false;
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
+                    gestureMode = GestureMode.DRAG;
+                    break;
+            }
+            scaleDetector.onTouchEvent(event);
+            if ((gestureMode == GestureMode.DRAG && scaleFactor != 1f && dragged) || gestureMode == GestureMode.ZOOM) {
+                invalidate();
+            }
             return true;
         } else {
-            switch (event.getAction()) {
+            if (isViewMode) return true;
+            if (gestureMode != GestureMode.NONE && event.getAction() != MotionEvent.ACTION_UP) {
+                return true;
+            }
+
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
+                    prevX = event.getX();
+                    prevY = event.getY();
                     // Need to check if the timer is set, if so dismiss it
                     if (timer != null) {
                         stopTimer();
@@ -251,6 +273,11 @@ public class DrawingView extends ViewGroup {
                     }
                     break;
                 case MotionEvent.ACTION_UP:
+                    if (gestureMode != GestureMode.NONE) {
+                        gestureMode = GestureMode.NONE;
+                        return true;
+                    }
+
                     if (moving) {
                         moving = false;
                         break;
@@ -825,23 +852,6 @@ public class DrawingView extends ViewGroup {
         }
     }
 
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            mScaleFactor *= detector.getScaleFactor();
-
-            // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
-
-            DrawingView.this.setScaleX(mScaleFactor);
-            DrawingView.this.setScaleY(mScaleFactor);
-
-            invalidate();
-            return true;
-        }
-    }
-
     public void undoOrRedo(boolean undo) {
         if (selectionEnabled) deselect();
         ArrayList<ArrayList<Action>> history = undo ? backwardHistory : forwardHistory;
@@ -888,5 +898,9 @@ public class DrawingView extends ViewGroup {
                 break;
         }
         return action;
+    }
+
+    private enum GestureMode {
+        NONE, DRAG, ZOOM
     }
 }
