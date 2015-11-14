@@ -3,7 +3,6 @@ package hcay.pui.com.umlapp;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -137,7 +136,12 @@ public class ClassDiagramView extends LinearLayout {
         addMethod.setVisibility(toViewMode ? GONE : VISIBLE);
         dragButton.setVisibility(toViewMode ? GONE : VISIBLE);
         modeButton.setVisibility(toViewMode ? GONE : VISIBLE);
-        nameEditText.setEnabled(!toViewMode);
+        nameEditText.clearFocus();
+        nameEditText.setClickable(!toViewMode);
+        nameEditText.setFocusableInTouchMode(!toViewMode);
+        nameEditText.setFocusable(!toViewMode);
+        memberAdapter.setEnabled(!toViewMode);
+        methodAdapter.setEnabled(!toViewMode);
     }
 
 }

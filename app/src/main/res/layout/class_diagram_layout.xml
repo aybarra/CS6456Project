@@ -46,11 +46,14 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="8dp"
             android:id="@+id/editText"
             android:hint="&lt;Class Name>"
-            android:inputType="text"
+            android:inputType="textMultiLine"
+            android:textStyle="bold"
             android:background="@null"
-            android:layout_marginBottom="8dp"
             android:gravity="center_horizontal" />
 
         <View
@@ -59,15 +62,18 @@
             android:background="@android:color/black" />
 
         <ListView
-            android:layout_width="wrap_content"
+            android:descendantFocusability="afterDescendants"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/memberListView" />
 
         <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Member Var"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text="+"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:background="@null"
             android:id="@+id/addMemberBtn" />
 
         <View
@@ -77,15 +83,18 @@
             android:background="@android:color/black" />
 
         <ListView
-            android:layout_width="wrap_content"
+            android:descendantFocusability="afterDescendants"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/methodListView" />
 
         <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Method"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text="+"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:background="@null"
             android:id="@+id/addMethodBtn" />
 
     </LinearLayout>
