@@ -4,7 +4,11 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Matrix;
 import android.graphics.PathEffect;
+
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -216,6 +220,7 @@ public class DrawingView extends ViewGroup {
                             moving = true;
                         } else {
                             deselect();
+                            points.clear();
                             drawPath.moveTo(touchX, touchY);
                             MainActivity.updateDeleteItem(false);
                         }
@@ -227,7 +232,11 @@ public class DrawingView extends ViewGroup {
                     if (moving) {
                         float dx = touchX - (float) originalPoint.x;
                         float dy = touchY - (float) originalPoint.y;
-                        drawPath.offset(dx, dy);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                            drawPath.offset(dx, dy);
+                        } else {
+                            offsetPath(dx, dy);
+                        }
                         originalPoint = new Point(touchX, touchY);
                         for (Object selectedObject : selectedObjects) {
                             if (selectedObject instanceof ClassDiagramObject) {
@@ -261,11 +270,10 @@ public class DrawingView extends ViewGroup {
                         drawPath.lineTo((float) points.get(0).x, (float) points.get(0).y);
                         points.add(points.get(0));
                     }
-                    drawCanvas.drawPath(drawPath, drawPaint);
                     strokeCounter++;
 
                     // Only set the time if we're in drawing mode
-                    if(!selectionEnabled){
+                    if (!selectionEnabled) {
                         // set the timer for the recognizer to be called
                         startTimer();
                     } else {
@@ -280,6 +288,18 @@ public class DrawingView extends ViewGroup {
             invalidate();
             return true;
         }
+    }
+
+    private void offsetPath(float dx, float dy) {
+        drawPath.rewind();
+        drawPath.moveTo((float) points.get(0).x, (float) points.get(0).y);
+        for (int i = 1; i < points.size(); i++) {
+            Point p = points.get(i);
+            p.x += dx;
+            p.y += dy;
+            drawPath.lineTo((float) p.x, (float) p.y);
+        }
+        drawPath.close();
     }
 
     private void performSelection() {
@@ -297,7 +317,7 @@ public class DrawingView extends ViewGroup {
             }
         }
 
-        points.clear();
+//        points.clear();
 
         if (selectedObjects.isEmpty()) clearPath();
         else MainActivity.updateDeleteItem(true);
