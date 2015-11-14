@@ -4,7 +4,11 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Matrix;
 import android.graphics.PathEffect;
+
+
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
