@@ -55,7 +55,7 @@ public class DrawingView extends ViewGroup {
     // canvas bitmap
     private Bitmap canvasBitmap;
     private float brushSize, lastBrushSize;
-    private boolean selectionEnabled =false;
+    private boolean selectionEnabled = false;
 
     private PathEffect dashEffect = new DashPathEffect(new float[] {30,60}, 0);
 
@@ -79,6 +79,10 @@ public class DrawingView extends ViewGroup {
     private List<UMLObject> umlObjects;
     private List<NoteView> notes;
     private List<Object> selectedObjects = new ArrayList<>();
+
+    private boolean moving = false;
+    private Ellipse selectedRegion;
+    private Point originalPoint;
 
     android.graphics.Point dispSize;
     int dispWidth;
@@ -211,23 +215,55 @@ public class DrawingView extends ViewGroup {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Need to check if the timer is set, if so dismiss it
-                    if(timer!=null){
+                    if (timer != null) {
                         stopTimer();
                     }
                     if (selectionEnabled) {
-                        selectedObjects.clear();
-                        drawPath.reset();
-                        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
-                        invalidate();
+                        originalPoint = new Point(touchX, touchY);
+                        if (selectedRegion != null && selectedRegion.contains(originalPoint)) {
+                            moving = true;
+                        } else {
+                            deselect();
+                            drawPath.moveTo(touchX, touchY);
+                            MainActivity.updateDeleteItem(false);
+                        }
+                    } else {
+                        drawPath.moveTo(touchX, touchY);
                     }
-                    drawPath.moveTo(touchX, touchY);
-                    MainActivity.updateDeleteItem(false);
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    drawPath.lineTo(touchX, touchY);
-                    points.add(new Point(touchX, touchY, strokeCounter));
+                    if (moving) {
+                        float dx = touchX - (float) originalPoint.x;
+                        float dy = touchY - (float) originalPoint.y;
+                        drawPath.offset(dx, dy);
+                        originalPoint = new Point(touchX, touchY);
+                        for (Object selectedObject : selectedObjects) {
+                            if (selectedObject instanceof ClassDiagramObject) {
+                                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
+                                float newX = classDiagramObject.view.getX() + dx;
+                                float newY = classDiagramObject.view.getY() + dy;
+                                classDiagramObject.view.setX(newX);
+                                classDiagramObject.view.setY(newY);
+                                if (classDiagramObject.noteView != null) {
+                                    newX = classDiagramObject.noteView.getX() + dx;
+                                    newY = classDiagramObject.noteView.getY() + dy;
+                                    classDiagramObject.noteView.setX(newX);
+                                    classDiagramObject.noteView.setY(newY);
+                                }
+                            } else if (selectedObject instanceof NoteView) {
+                                NoteView noteView = (NoteView) selectedObject;
+                            }
+                        }
+                    } else {
+                        drawPath.lineTo(touchX, touchY);
+                        points.add(new Point(touchX, touchY, strokeCounter));
+                    }
                     break;
                 case MotionEvent.ACTION_UP:
+                    if (moving) {
+                        moving = false;
+                        break;
+                    }
                     if (points.size() == 0) break;
                     if (selectionEnabled) {
                         drawPath.lineTo((float) points.get(0).x, (float) points.get(0).y);
@@ -255,16 +291,16 @@ public class DrawingView extends ViewGroup {
     }
 
     private void performSelection() {
-        Ellipse ellipse = new Ellipse(points);
+        selectedRegion = new Ellipse(points);
 
         for (UMLObject umlObject : umlObjects) {
-            if (ellipse.contains(umlObject.view)) {
+            if (selectedRegion.contains(umlObject.view)) {
                 selectedObjects.add(umlObject);
             }
         }
 
         for (NoteView noteView : notes) {
-            if (ellipse.contains(noteView)) {
+            if (selectedRegion.contains(noteView)) {
                 selectedObjects.add(noteView);
             }
         }
@@ -303,6 +339,7 @@ public class DrawingView extends ViewGroup {
     }
 
     private void clearPath() {
+        selectedRegion = null;
         drawPath.reset();
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
@@ -340,6 +377,7 @@ public class DrawingView extends ViewGroup {
             drawPaint.setPathEffect(dashEffect);
         } else {
             // Otherwise we wanna clear the drawpath
+            deselect();
             drawPaint.setPathEffect(null);
             drawPath.reset();
             drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
