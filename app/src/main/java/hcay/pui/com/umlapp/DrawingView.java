@@ -106,6 +106,7 @@ public class DrawingView extends ViewGroup {
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
+//        setLayoutParams(new LinearLayout.LayoutParams(10000, 5000));
         setupDrawing(context);
     }
 
@@ -120,7 +121,7 @@ public class DrawingView extends ViewGroup {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        setMeasuredDimension(getMeasuredWidth(), getMeasuredHeight());
+        setMeasuredDimension(10000, 5000);
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             measureChild(childView, widthMeasureSpec, heightMeasureSpec);
@@ -187,7 +188,7 @@ public class DrawingView extends ViewGroup {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             scaleFactor *= detector.getScaleFactor();
-            scaleFactor = Math.max(0.5f, Math.min(scaleFactor, 5f));
+//            scaleFactor = Math.max(0.5f, Math.min(scaleFactor, 5f));
             setScaleX(scaleFactor);
             setScaleY(scaleFactor);
             return true;
