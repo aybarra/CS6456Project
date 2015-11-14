@@ -558,10 +558,11 @@ public class DrawingView extends ViewGroup {
                 || result.gesture == Gesture.COMPOSITION || result.gesture == Gesture.DEPENDENCY
                 || result.gesture == Gesture.REALIZATION_DEPENDENCY || result.gesture == Gesture.REQUIRED) {
 
+            // Determine the orientation and direction its pointing
             GestureOrientation orientation = OrientLocUtil.getGestureOrientation(bounds);
             Log.i(TAG, "Gesture orientation is: " + orientation.toString());
 
-            // TODO: Figure out the two closest classfiers by index
+            // Figure out the two closest classfiers by index
             ClassDiagramObject objectSrc;
             ClassDiagramObject objectDst;
             if(orientation == GestureOrientation.LEFT_TO_RIGHT || orientation == GestureOrientation.RIGHT_TO_LEFT) {
@@ -576,6 +577,7 @@ public class DrawingView extends ViewGroup {
                     return;
                 }
 
+                Log.d(TAG, "left index is: " + left + " and right index is: " + right);
                 // Perform set based on orientation
                 if(orientation == GestureOrientation.LEFT_TO_RIGHT){
                     objectSrc = (ClassDiagramObject)umlObjects.get(left);
@@ -608,17 +610,18 @@ public class DrawingView extends ViewGroup {
             RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
             view.init(DrawingView.this.getContext(), objectSrc, objectDst, orientation, result.gesture);
 
-            // TODO: Figure out the placement
-            android.graphics.Point location = OrientLocUtil.getPlacementLocation(orientation, objectSrc);
+            // Figure out the placement location
+            android.graphics.Point location = OrientLocUtil.getPlacementLocation(orientation, objectSrc, objectDst);
             view.setX((float) location.x);
             view.setY((float) location.y);
-            Toast.makeText(getContext(), "Placement of relationship is: " + location.toString(),
-                           Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Relation was placed: " + location.toString());
+//            Toast.makeText(getContext(), "Placement of relationship is: " + location.toString(),
+//                           Toast.LENGTH_SHORT).show();
 
-            // TODO: Need to figure out the size to make the relationship
-            Size relationshipSize = new Size(Math.abs(objectDst.getLocation().x-(objectSrc.getLocation().x+objectSrc.getSize().getWidth())),
-                                             (int)Math.abs((objectDst.getLocation().y+.5*objectDst.getSize().getHeight())-(.5*objectSrc.getSize().getHeight())));
-            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
+            // Determine the size to make the relationship
+            Size relationshipSize = OrientLocUtil.getRelationshipSize(objectSrc, objectDst, orientation);
+//            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight());
             RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst, result.gesture);
             DrawingView.this.addView(view, new LinearLayout.LayoutParams(relationshipSize.getWidth(), relationshipSize.getHeight()));
             umlObjects.add(relationship);
@@ -847,5 +850,4 @@ public class DrawingView extends ViewGroup {
         }
         return action;
     }
-
 }

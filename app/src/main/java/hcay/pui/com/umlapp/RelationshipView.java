@@ -102,14 +102,39 @@ public class RelationshipView extends View {
     }
 
     public android.graphics.Point drawLineSegments(){
+        android.graphics.Point lineEnd = null;
         if(mGestureOrientation == GestureOrientation.LEFT_TO_RIGHT){
-            drawCanvas.drawLine(0, this.getMeasuredHeight()/2, this.getMeasuredWidth()/2, this.getMeasuredHeight()/2, mPaint);
-            drawCanvas.drawLine(this.getMeasuredWidth()/2, this.getMeasuredHeight()/2, this.getMeasuredWidth()/2, (float)(STROKE_WIDTH*2.5), mPaint);
-            drawCanvas.drawLine(this.getMeasuredWidth()/2, (float)(STROKE_WIDTH*2.5), this.getMeasuredWidth()- STROKE_WIDTH*4, (float)(STROKE_WIDTH*2.5), mPaint);
-
-            return new android.graphics.Point(this.getMeasuredWidth()- STROKE_WIDTH*4, (int)(STROKE_WIDTH*2.5));
+            // Going up
+            if(this.cdoSrc.getLocation().y > this.cdoDst.getLocation().y) {
+                int UP_BOTTOM_PADDING = (STROKE_WIDTH*5/2);
+                int UP_TOP_PADDING = STROKE_WIDTH*2;
+                drawCanvas.drawLine(0, this.getMeasuredHeight()-(UP_BOTTOM_PADDING),
+                                    this.getMeasuredWidth() / 2, this.getMeasuredHeight()-(UP_BOTTOM_PADDING),
+                                    mPaint);
+                drawCanvas.drawLine(this.getMeasuredWidth() / 2, this.getMeasuredHeight()-(UP_BOTTOM_PADDING),
+                                    this.getMeasuredWidth() / 2, UP_TOP_PADDING,
+                                    mPaint);
+                drawCanvas.drawLine(this.getMeasuredWidth() / 2, UP_TOP_PADDING,
+                                    this.getMeasuredWidth() - STROKE_WIDTH * 4, UP_TOP_PADDING,
+                                    mPaint);
+                lineEnd = new android.graphics.Point(this.getMeasuredWidth()- STROKE_WIDTH*4, UP_TOP_PADDING);
+                // Going down
+            }else if(this.cdoSrc.getLocation().y < this.cdoDst.getLocation().y){
+                int DOWN_TOP_PADDING = (STROKE_WIDTH/2);
+                int DOWN_BOTTOM_PADDING = STROKE_WIDTH*5/2;
+                drawCanvas.drawLine(0, DOWN_TOP_PADDING, this.getMeasuredWidth()/2, DOWN_TOP_PADDING, mPaint);
+                drawCanvas.drawLine(this.getMeasuredWidth()/2, DOWN_TOP_PADDING, this.getMeasuredWidth()/2, this.getMeasuredHeight()-(DOWN_BOTTOM_PADDING), mPaint);
+                drawCanvas.drawLine(this.getMeasuredWidth()/2, this.getMeasuredHeight()- (DOWN_BOTTOM_PADDING), this.getMeasuredWidth() - STROKE_WIDTH * 3, this.getMeasuredHeight()- (DOWN_BOTTOM_PADDING), mPaint);
+                lineEnd = new android.graphics.Point(this.getMeasuredWidth()- STROKE_WIDTH*4,  (this.getMeasuredHeight() - (DOWN_BOTTOM_PADDING)));
+            // Equal
+            } else {
+                // Draw a line across?
+                drawCanvas.drawLine(0, this.getMeasuredHeight()/2, this.getMeasuredWidth()- STROKE_WIDTH*4, this.getMeasuredHeight()/2, mPaint);
+            }
+            return lineEnd;
         } else if(mGestureOrientation == GestureOrientation.RIGHT_TO_LEFT){
-//            drawCanvas.drawLine((float)(this.getMeasuredWidth()*.95), this.getMeasuredHeight()/2, 0, this.getMeasuredHeight()/2, mPaint);
+            drawCanvas.drawLine((float)(this.getMeasuredWidth()), 0, this.getMeasuredWidth()/2, 0, mPaint);
+            drawCanvas.drawLine((float)(this.getMeasuredWidth()/2), 0, this.getMeasuredWidth()/2, 0, mPaint);
 
         } else if(mGestureOrientation == GestureOrientation.BOTTOM_TO_TOP){
 

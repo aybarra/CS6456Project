@@ -36,6 +36,9 @@ public class DecoratorUtil {
 
         } else if(orientation == GestureOrientation.RIGHT_TO_LEFT){
 
+//            b = new android.graphics.Point((start.x + DISPLACEMENT*3), start.y);
+//            c = new android.graphics.Point((b.x - DISPLACEMENT*4), start.y-DISPLACEMENT*2);
+//            d = new android.graphics.Point(c.x, (start.y+DISPLACEMENT*2));
         } else if(orientation == GestureOrientation.TOP_TO_BOTTOM){
 
         } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
