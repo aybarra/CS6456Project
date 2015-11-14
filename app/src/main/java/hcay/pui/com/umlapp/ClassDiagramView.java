@@ -27,6 +27,7 @@ public class ClassDiagramView extends LinearLayout {
     private Button addMember, addMethod;
     private CircleButton dragButton, modeButton;
     private EditText nameEditText;
+    private View separator;
 
     private final String TAG = "CLASS_DIAGRAM_VIEW";
     private float prevX, prevY;
@@ -43,6 +44,7 @@ public class ClassDiagramView extends LinearLayout {
 
     public void init(Context context){
         nameEditText = (EditText) findViewById(R.id.editText);
+        separator = findViewById(R.id.separator);
 
         memberListView = (ListView) findViewById(R.id.memberListView);
         memberAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), true);
@@ -102,9 +104,10 @@ public class ClassDiagramView extends LinearLayout {
         modeButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                memberListView.setVisibility(isClass ? GONE : VISIBLE);
-                addMember.setVisibility(isClass ? GONE : VISIBLE);
                 isClass = !isClass;
+                memberListView.setVisibility(isClass ? VISIBLE : GONE);
+                addMember.setVisibility(isClass ? VISIBLE : GONE);
+                separator.setVisibility(isClass ? VISIBLE : GONE);
             }
         });
     }
@@ -122,7 +125,6 @@ public class ClassDiagramView extends LinearLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.i(TAG, "Measurespec is: " + widthMeasureSpec + "," + heightMeasureSpec);
     }
 
     @Override
@@ -131,7 +133,7 @@ public class ClassDiagramView extends LinearLayout {
     }
 
     public void changeMode(boolean toViewMode) {
-        addMember.setVisibility(toViewMode ? GONE : VISIBLE);
+        addMember.setVisibility(toViewMode || !isClass ? GONE : VISIBLE);
         addMethod.setVisibility(toViewMode ? GONE : VISIBLE);
         dragButton.setVisibility(toViewMode ? GONE : VISIBLE);
         modeButton.setVisibility(toViewMode ? GONE : VISIBLE);
