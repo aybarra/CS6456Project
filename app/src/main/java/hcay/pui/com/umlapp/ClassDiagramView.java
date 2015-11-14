@@ -26,6 +26,7 @@ public class ClassDiagramView extends LinearLayout {
     private Button addMember, addMethod;
     private CircleButton dragButton, modeButton;
     private EditText nameEditText;
+
     private View separator;
 
     private final String TAG = "CLASS_DIAGRAM_VIEW";
@@ -43,6 +44,7 @@ public class ClassDiagramView extends LinearLayout {
 
     public void init(Context context){
         nameEditText = (EditText) findViewById(R.id.editText);
+
         separator = findViewById(R.id.separator);
 
         memberListView = (ListView) findViewById(R.id.memberListView);
@@ -98,7 +100,7 @@ public class ClassDiagramView extends LinearLayout {
                 return false;
             }
         });
-        
+
         modeButton = (CircleButton) findViewById(R.id.typeButton);
         modeButton.setOnClickListener(new OnClickListener() {
             @Override
