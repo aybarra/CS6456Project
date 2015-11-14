@@ -22,4 +22,8 @@
         android:icon="@android:drawable/ic_menu_save"
         android:enabled="false"
         android:showAsAction="always"/>
+    <item android:id="@+id/action_view"
+        android:title="View"
+        android:icon="@drawable/ic_face_white"
+        android:showAsAction="always" />
 </menu>
