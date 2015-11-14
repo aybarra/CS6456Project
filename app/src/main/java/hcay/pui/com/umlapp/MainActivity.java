@@ -24,7 +24,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private DrawingView drawView;
     private ImageButton currPaint, drawBtn, selectionBtn, newBtn, saveBtn;
     private float smallBrush, mediumBrush, largeBrush;
-    public static MenuItem undoItem, redoItem, deleteItem;
+    public static MenuItem undoItem, redoItem, deleteItem, viewItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,12 +96,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         undoItem = menu.findItem(R.id.action_undo);
         redoItem = menu.findItem(R.id.action_redo);
         deleteItem = menu.findItem(R.id.action_delete);
+        viewItem = menu.findItem(R.id.action_view);
         undoItem.setEnabled(false);
         redoItem.setEnabled(false);
         deleteItem.setEnabled(false);
         undoItem.getIcon().setAlpha(50);
         redoItem.getIcon().setAlpha(50);
         deleteItem.getIcon().setAlpha(50);
+        viewItem.getIcon().setAlpha(100);
         return true;
     }
 
@@ -126,6 +128,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             drawView.undoOrRedo(false);
         } else if (id == R.id.action_delete) {
             drawView.deleteSelected();
+        } else if (id == R.id.action_view) {
+            drawView.switchMode();
         }
 
         return super.onOptionsItemSelected(item);
