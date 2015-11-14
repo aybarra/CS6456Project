@@ -26,6 +26,7 @@ public class ClassDiagramView extends LinearLayout {
     private Button addMember, addMethod;
     private CircleButton dragButton, modeButton;
     private EditText nameEditText;
+    private View separator;
 
     private View separator;
 
@@ -44,6 +45,7 @@ public class ClassDiagramView extends LinearLayout {
 
     public void init(Context context){
         nameEditText = (EditText) findViewById(R.id.editText);
+        separator = findViewById(R.id.separator);
 
         separator = findViewById(R.id.separator);
 
