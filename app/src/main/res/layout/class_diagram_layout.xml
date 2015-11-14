@@ -23,7 +23,7 @@
             <at.markushi.ui.CircleButton
                 android:layout_width="48dip"
                 android:layout_height="48dip"
-                android:layout_marginLeft="10dp"
+                android:layout_marginLeft="8dp"
                 android:padding="13dp"
                 android:src="@drawable/bi_navigable"
                 android:layout_alignParentLeft="true"
@@ -48,22 +48,20 @@
             android:id="@+id/editText"
             android:hint="&lt;Class Name>"
             android:inputType="text"
+            android:background="@null"
+            android:layout_marginBottom="8dp"
             android:gravity="center_horizontal"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/textView"
-            android:visibility="gone"
-            android:layout_gravity="center_horizontal" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dip"
+            android:background="#000000" />
 
         <ListView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/memberListView"
-            android:layout_weight=".333"
-            android:background="@android:color/darker_gray"/>
+            android:layout_weight=".333" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -76,12 +74,12 @@
             android:layout_width="match_parent"
             android:layout_height="2dip"
             android:background="#000000" />
+
         <ListView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/methodListView"
-            android:layout_weight=".333"
-            android:background="@android:color/darker_gray"/>
+            android:layout_weight=".333" />
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
