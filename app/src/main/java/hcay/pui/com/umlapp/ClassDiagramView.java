@@ -3,10 +3,10 @@ package hcay.pui.com.umlapp;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
@@ -22,9 +22,15 @@ public class ClassDiagramView extends LinearLayout {
 
     public FeatureAdapter memberAdapter, methodAdapter;
     public ClassDiagramObject classDiagramObject;
+    private ListView memberListView, methodListView;
+    private Button addMember, addMethod;
+    private CircleButton dragButton, modeButton;
+    private EditText nameEditText;
+    private View separator;
 
     private final String TAG = "CLASS_DIAGRAM_VIEW";
     private float prevX, prevY;
+    private boolean isClass = true;
 
     public ClassDiagramView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -36,11 +42,14 @@ public class ClassDiagramView extends LinearLayout {
     }
 
     public void init(Context context){
-        ListView memberListView = (ListView)findViewById(R.id.memberListView);
+        nameEditText = (EditText) findViewById(R.id.editText);
+        separator = findViewById(R.id.separator);
+
+        memberListView = (ListView) findViewById(R.id.memberListView);
         memberAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), true);
         memberListView.setAdapter(memberAdapter);
 
-        Button addMember = (Button)findViewById(R.id.addMemberBtn);
+        addMember = (Button) findViewById(R.id.addMemberBtn);
         addMember.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,11 +58,11 @@ public class ClassDiagramView extends LinearLayout {
             }
         });
 
-        ListView methodListView = (ListView)findViewById(R.id.methodListView);
+        methodListView = (ListView) findViewById(R.id.methodListView);
         methodAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), false);
         methodListView.setAdapter(methodAdapter);
 
-        Button addMethod = (Button)findViewById(R.id.addMethodBtn);
+        addMethod = (Button) findViewById(R.id.addMethodBtn);
         addMethod.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,7 +71,7 @@ public class ClassDiagramView extends LinearLayout {
             }
         });
 
-        CircleButton dragButton = (CircleButton) findViewById(R.id.dragButton);
+        dragButton = (CircleButton) findViewById(R.id.dragButton);
         dragButton.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -89,6 +98,17 @@ public class ClassDiagramView extends LinearLayout {
                 return false;
             }
         });
+
+        modeButton = (CircleButton) findViewById(R.id.typeButton);
+        modeButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isClass = !isClass;
+                memberListView.setVisibility(isClass ? VISIBLE : GONE);
+                addMember.setVisibility(isClass ? VISIBLE : GONE);
+                separator.setVisibility(isClass ? VISIBLE : GONE);
+            }
+        });
     }
 
 //    @Override
@@ -104,12 +124,24 @@ public class ClassDiagramView extends LinearLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.i(TAG, "Measurespec is: " + widthMeasureSpec + "," + heightMeasureSpec);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+    }
+
+    public void changeMode(boolean toViewMode) {
+        addMember.setVisibility(toViewMode || !isClass ? GONE : VISIBLE);
+        addMethod.setVisibility(toViewMode ? GONE : VISIBLE);
+        dragButton.setVisibility(toViewMode ? GONE : VISIBLE);
+        modeButton.setVisibility(toViewMode ? GONE : VISIBLE);
+        nameEditText.clearFocus();
+        nameEditText.setClickable(!toViewMode);
+        nameEditText.setFocusableInTouchMode(!toViewMode);
+        nameEditText.setFocusable(!toViewMode);
+        memberAdapter.setEnabled(!toViewMode);
+        methodAdapter.setEnabled(!toViewMode);
     }
 
 }

@@ -1,13 +1,14 @@
 package hcay.pui.com.umlapp;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import java.util.List;
 
@@ -15,9 +16,11 @@ import java.util.List;
  * Created by andrasta on 11/8/15.
  */
 public class FeatureAdapter extends ArrayAdapter<Feature> {
-    private List<Feature> featureList;
+    public List<Feature> featureList;
+
     private Context context;
     private boolean isMember;
+    private boolean editable = true;
 
     public FeatureAdapter(Context ctx, List<Feature> featureList, boolean isMember) {
         super(ctx, R.layout.feature_row_layout, featureList);
@@ -26,83 +29,80 @@ public class FeatureAdapter extends ArrayAdapter<Feature> {
         this.isMember = isMember;
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
-//        View v = convertView;
-        FeatureHolder holder;
-
-        // First let's verify the convertView is not null
-        if (convertView == null) {
-            // This a new view we inflate the new layout
+        View v = convertView;
+        if (v == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.feature_row_layout, parent, false);
+            v = inflater.inflate(R.layout.feature_row_layout, parent, false);
+            FeatureHolder featureHolder = new FeatureHolder();
+            featureHolder.editFeatureNameView = (EditText) v.findViewById(R.id.editFeatureName);
+            featureHolder.removeButton = (Button) v.findViewById(R.id.removeButton);
+            v.setTag(featureHolder);
+        }
 
-            // Now we can fill the layout with the right values
-            EditText editFeatureName = (EditText) convertView.findViewById(R.id.editFeatureName);
-            TextView featureName = (TextView) convertView.findViewById(R.id.featureName);
-            Button save = (Button) convertView.findViewById(R.id.saveFeatureBtn);
-            Button remove = (Button) convertView.findViewById(R.id.removeFeatureBtn);
+        final FeatureHolder featureHolder = (FeatureHolder) v.getTag();
 
-            editFeatureName.setHint("<Enter " + (isMember ? "member" : "method") + " name here>");
+        if (featureHolder.textWatcher != null) {
+            featureHolder.editFeatureNameView.removeTextChangedListener(featureHolder.textWatcher);
+        }
 
-            holder = new FeatureHolder(editFeatureName, featureName, save, remove);
-            convertView.setTag(holder);
-        } else
-            holder = (FeatureHolder) convertView.getTag();
+        final Feature feature = getItem(position);
 
-        holder.saveBtn.setTag(position);
+        featureHolder.textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-        Feature feature = featureList.get(position);
-        holder.editFeatureNameView.setText(feature.getFeatureName());
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                feature.featureName = s.toString();
+                featureHolder.editFeatureNameView.requestFocus();
+                featureHolder.editFeatureNameView.setSelection(s.length());
+            }
 
-        return convertView;
+            @Override
+            public void afterTextChanged(Editable s) {}
+        };
+
+        featureHolder.editFeatureNameView.addTextChangedListener(featureHolder.textWatcher);
+        featureHolder.editFeatureNameView.setText(feature.featureName);
+        featureHolder.editFeatureNameView.setHint("<" + (isMember ? "member" : "method") + ">");
+        featureHolder.removeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                remove(featureList.get(position));
+                notifyDataSetChanged();
+            }
+        });
+
+        featureHolder.editFeatureNameView.clearFocus();
+        featureHolder.editFeatureNameView.setClickable(editable);
+        featureHolder.editFeatureNameView.setFocusableInTouchMode(editable);
+        featureHolder.editFeatureNameView.setFocusable(editable);
+        featureHolder.removeButton.setVisibility(editable ? View.VISIBLE : View.GONE);
+
+        return v;
     }
 
-    public void addItem(String featureName){
+    public void addItem(String featureName) {
         featureList.add(new Feature(featureName));
+    }
+
+    public void setEnabled(boolean enabled) {
+        editable = enabled;
+        notifyDataSetChanged();
     }
 
     private static class FeatureHolder {
         public EditText editFeatureNameView;
-        public TextView featureNameView;
-        public Button saveBtn;
-        public Button removeBtn;
-
-        public FeatureHolder(EditText edit, TextView label, Button save, Button remove){
-            editFeatureNameView = edit;
-            featureNameView = label;
-            saveBtn = save;
-            save.setOnClickListener(mSaveClickListener);
-            removeBtn = remove;
-        }
-
-        // Prevents us from having to create a listener every time get view is called
-        // Cited from here:
-        // http://scottweber.com/2013/04/30/adding-click-listeners-to-views-in-adapters/
-        private View.OnClickListener mSaveClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveBtn.setVisibility(View.GONE);
-
-                String text = editFeatureNameView.getText().toString();
-                editFeatureNameView.setVisibility(View.GONE);
-
-                featureNameView.setVisibility(View.VISIBLE);
-                featureNameView.setText(text);
-            }
-        };
-
+        public Button removeButton;
+        public TextWatcher textWatcher;
     }
 }
 
 class Feature {
-
-    private String featureName;
-    public Feature(String value){
+    public String featureName;
+    public Feature(String value) {
         featureName = value;
-    }
-
-    public String getFeatureName(){
-        return featureName;
     }
 }

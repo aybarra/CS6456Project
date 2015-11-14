@@ -1,34 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginLeft="5dp" android:layout_marginRight="5dp" >
 
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="35dp"
+        android:inputType="textMultiLine|textNoSuggestions"
         android:id="@+id/editFeatureName"
+        android:background="@null"
         android:hint="&lt;Enter feature name here>" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save"
-        android:id="@+id/saveFeatureBtn"
-        android:visibility="visible"/>
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="right|center_vertical"
+        android:layout_marginRight="5dp"
+        android:id="@+id/removeButton"
+        android:background="@drawable/ic_clear_black" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/featureName"
-        android:visibility="gone"/>
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Remove"
-        android:id="@+id/removeFeatureBtn"
-        android:visibility="visible"/>
-</LinearLayout>
+</FrameLayout>

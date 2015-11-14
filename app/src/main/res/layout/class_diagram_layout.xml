@@ -9,7 +9,7 @@
         android:orientation="vertical"
         android:background="@drawable/classifier_border"
         android:paddingTop="4dp"
-        android:paddingBottom="10dp"
+        android:paddingBottom="2dp"
         android:paddingLeft="2dp"
         android:paddingRight="2dp" >
 
@@ -23,7 +23,8 @@
             <at.markushi.ui.CircleButton
                 android:layout_width="48dip"
                 android:layout_height="48dip"
-                android:layout_marginLeft="10dp"
+                android:layout_marginLeft="8dp"
+                android:padding="13dp"
                 android:src="@drawable/bi_navigable"
                 android:layout_alignParentLeft="true"
                 app:cb_color="#6ed9f3"
@@ -33,59 +34,67 @@
             <at.markushi.ui.CircleButton
                 android:layout_width="48dip"
                 android:layout_height="48dip"
-                android:layout_marginLeft="10dp"
+                android:padding="12dp"
                 android:src="@drawable/arrow"
                 android:layout_toRightOf="@id/dragButton"
                 app:cb_color="#6ed9f3"
                 app:cb_pressedRingWidth="8dip"
                 android:id="@+id/typeButton" />
+
         </RelativeLayout>
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="8dp"
             android:id="@+id/editText"
             android:hint="&lt;Class Name>"
-            android:inputType="text"
-            android:gravity="center_horizontal"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/textView"
-            android:visibility="gone"
-            android:layout_gravity="center_horizontal" />
-
-        <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/memberListView"
-            android:layout_weight=".333"
-            android:background="@android:color/darker_gray"/>
-
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Member Var"
-            android:id="@+id/addMemberBtn" />
+            android:inputType="textMultiLine"
+            android:textStyle="bold"
+            android:background="@null"
+            android:gravity="center_horizontal" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="2dip"
-            android:background="#000000" />
+            android:background="@android:color/black" />
+
         <ListView
-            android:layout_width="wrap_content"
+            android:descendantFocusability="afterDescendants"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/methodListView"
-            android:layout_weight=".333"
-            android:background="@android:color/darker_gray"/>
+            android:id="@+id/memberListView" />
+
         <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text="+"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:background="@null"
+            android:id="@+id/addMemberBtn" />
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="match_parent"
+            android:layout_height="2dip"
+            android:background="@android:color/black" />
+
+        <ListView
+            android:descendantFocusability="afterDescendants"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Method"
+            android:id="@+id/methodListView" />
+
+        <Button
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:text="+"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:background="@null"
             android:id="@+id/addMethodBtn" />
 
     </LinearLayout>

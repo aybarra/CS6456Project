@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
+import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -95,6 +96,10 @@ public class DrawingView extends ViewGroup {
     private ArrayList<ArrayList<Action>> backwardHistory = new ArrayList<>();
     private ArrayList<ArrayList<Action>> forwardHistory = new ArrayList<>();
 
+    private boolean isViewMode = false;
+
+    private final int CLASSIFIER_MIN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics());
+
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing(context);
@@ -116,6 +121,18 @@ public class DrawingView extends ViewGroup {
             View childView = getChildAt(i);
             measureChild(childView, widthMeasureSpec, heightMeasureSpec);
         }
+    }
+
+    public void switchMode() {
+        isViewMode = !isViewMode;
+        for (UMLObject umlObject : umlObjects) {
+            if (umlObject instanceof ClassDiagramObject) {
+                ((ClassDiagramView) umlObject.view).changeMode(isViewMode);
+                if (((ClassDiagramObject) umlObject).noteView != null)
+                    ((ClassDiagramObject) umlObject).noteView.setVisibility(isViewMode ? GONE : VISIBLE);
+            }
+        }
+        MainActivity.viewItem.getIcon().setAlpha(isViewMode ? 255 : 200);
     }
 
     private void setupDrawing(Context context){
@@ -195,6 +212,7 @@ public class DrawingView extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (isViewMode) return true;
 
         // Original
         float touchX = event.getX();
@@ -204,7 +222,7 @@ public class DrawingView extends ViewGroup {
             mScaleDetector.onTouchEvent(event);
             return true;
         } else {
-            switch(event.getAction()) {
+            switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Need to check if the timer is set, if so dismiss it
                     if (timer != null) {
@@ -216,6 +234,7 @@ public class DrawingView extends ViewGroup {
                             moving = true;
                         } else {
                             deselect();
+                            points.clear();
                             drawPath.moveTo(touchX, touchY);
                             MainActivity.updateDeleteItem(false);
                         }
@@ -225,27 +244,7 @@ public class DrawingView extends ViewGroup {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (moving) {
-                        float dx = touchX - (float) originalPoint.x;
-                        float dy = touchY - (float) originalPoint.y;
-                        drawPath.offset(dx, dy);
-                        originalPoint = new Point(touchX, touchY);
-                        for (Object selectedObject : selectedObjects) {
-                            if (selectedObject instanceof ClassDiagramObject) {
-                                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
-                                float newX = classDiagramObject.view.getX() + dx;
-                                float newY = classDiagramObject.view.getY() + dy;
-                                classDiagramObject.view.setX(newX);
-                                classDiagramObject.view.setY(newY);
-                                if (classDiagramObject.noteView != null) {
-                                    newX = classDiagramObject.noteView.getX() + dx;
-                                    newY = classDiagramObject.noteView.getY() + dy;
-                                    classDiagramObject.noteView.setX(newX);
-                                    classDiagramObject.noteView.setY(newY);
-                                }
-                            } else if (selectedObject instanceof NoteView) {
-                                NoteView noteView = (NoteView) selectedObject;
-                            }
-                        }
+                        moveSelection(touchX, touchY);
                     } else {
                         drawPath.lineTo(touchX, touchY);
                         points.add(new Point(touchX, touchY, strokeCounter));
@@ -261,11 +260,10 @@ public class DrawingView extends ViewGroup {
                         drawPath.lineTo((float) points.get(0).x, (float) points.get(0).y);
                         points.add(points.get(0));
                     }
-                    drawCanvas.drawPath(drawPath, drawPaint);
                     strokeCounter++;
 
                     // Only set the time if we're in drawing mode
-                    if(!selectionEnabled){
+                    if (!selectionEnabled) {
                         // set the timer for the recognizer to be called
                         startTimer();
                     } else {
@@ -280,6 +278,47 @@ public class DrawingView extends ViewGroup {
             invalidate();
             return true;
         }
+    }
+
+    private void moveSelection(float x, float y) {
+        float dx = x - (float) originalPoint.x;
+        float dy = y - (float) originalPoint.y;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            drawPath.offset(dx, dy);
+        } else {
+            offsetPath(dx, dy);
+        }
+        originalPoint = new Point(x, y);
+        for (Object selectedObject : selectedObjects) {
+            if (selectedObject instanceof ClassDiagramObject) {
+                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
+                float newX = classDiagramObject.view.getX() + dx;
+                float newY = classDiagramObject.view.getY() + dy;
+                classDiagramObject.view.setX(newX);
+                classDiagramObject.view.setY(newY);
+                if (classDiagramObject.noteView != null) {
+                    newX = classDiagramObject.noteView.getX() + dx;
+                    newY = classDiagramObject.noteView.getY() + dy;
+                    classDiagramObject.noteView.setX(newX);
+                    classDiagramObject.noteView.setY(newY);
+                }
+            } else if (selectedObject instanceof NoteView) {
+                NoteView noteView = (NoteView) selectedObject;
+                // TODO: moving noteViews separately?
+            }
+        }
+    }
+
+    private void offsetPath(float dx, float dy) {
+        drawPath.rewind();
+        drawPath.moveTo((float) points.get(0).x, (float) points.get(0).y);
+        for (int i = 1; i < points.size(); i++) {
+            Point p = points.get(i);
+            p.x += dx;
+            p.y += dy;
+            drawPath.lineTo((float) p.x, (float) p.y);
+        }
+        drawPath.close();
     }
 
     private void performSelection() {
@@ -297,7 +336,7 @@ public class DrawingView extends ViewGroup {
             }
         }
 
-        points.clear();
+//        points.clear();
 
         if (selectedObjects.isEmpty()) clearPath();
         else MainActivity.updateDeleteItem(true);
@@ -549,7 +588,7 @@ public class DrawingView extends ViewGroup {
             view.setY((float) topMost.y);
             UMLObject classDiagramObject = new ClassDiagramObject(view);
             umlObjects.add(classDiagramObject);
-            addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
+            addView(view, new LinearLayout.LayoutParams(Math.max(tempSize.getWidth(), CLASSIFIER_MIN_WIDTH), LayoutParams.WRAP_CONTENT));
             backwardHistory.add(Action.create(Action.ActionType.ADDED, classDiagramObject));
             forwardHistory.clear();
             updateUndoRedoItems();
