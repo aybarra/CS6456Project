@@ -11,6 +11,10 @@ public class Point {
         this.strokeID = strokeID;
     }
 
+    public Point(double x, double y) {
+        this(x, y, -1);
+    }
+
     @Override
     public String toString() {
     	return String.format("{x=%.3f,y=%.3f,id=%d}", x, y, strokeID);

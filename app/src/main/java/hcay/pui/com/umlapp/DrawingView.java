@@ -54,10 +54,9 @@ public class DrawingView extends ViewGroup {
     // canvas bitmap
     private Bitmap canvasBitmap;
     private float brushSize, lastBrushSize;
-    private boolean selectionEnabled =false;
+    private boolean selectionEnabled = false;
 
-    static float phase;
-    private static PathEffect pe;
+    private PathEffect dashEffect = new DashPathEffect(new float[] {30,60}, 0);
 
     Recognizer recognizer;
     ArrayList<Point> points;
@@ -76,6 +75,11 @@ public class DrawingView extends ViewGroup {
 
     private List<UMLObject> umlObjects;
     private List<NoteView> notes;
+    private List<Object> selectedObjects = new ArrayList<>();
+
+    private boolean moving = false;
+    private Ellipse selectedRegion;
+    private Point originalPoint;
 
     protected float mPosX;
     protected float mPosY;
@@ -87,6 +91,9 @@ public class DrawingView extends ViewGroup {
     protected float mLastTouchY;
     protected static final int INVALID_POINTER_ID = -1;
     protected int mActivePointerId = INVALID_POINTER_ID;
+
+    private ArrayList<ArrayList<Action>> backwardHistory = new ArrayList<>();
+    private ArrayList<ArrayList<Action>> forwardHistory = new ArrayList<>();
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -144,13 +151,6 @@ public class DrawingView extends ViewGroup {
         super.onSizeChanged(w, h, oldw, oldh);
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
-//        if(drawCanvas != null){
-//            drawCanvas
-//        }
-    }
-
-    private static void makeEffect(){
-        pe = new DashPathEffect(new float[] {10, 5, 5, 5}, phase);
     }
 
     @Override
@@ -185,13 +185,12 @@ public class DrawingView extends ViewGroup {
         }*/
 
         // Old stuff
-        if(selectionEnabled){
-            makeEffect();
-            phase += 1;
-            invalidate();
-        }
-
-        canvas.restore();
+//        if(selectionEnabled){
+//            makeEffect();
+//            phase += 1;
+//            invalidate();
+//        }
+//        canvas.restore();
     }
 
     @Override
@@ -203,84 +202,65 @@ public class DrawingView extends ViewGroup {
 
         if(event.getPointerCount() > 1) {
             mScaleDetector.onTouchEvent(event);
-
-            /*
-            final int action = event.getAction();
-            switch (action & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_DOWN: {
-                    final float x = event.getX();
-                    final float y = event.getY();
-
-                    mLastTouchX = x;
-                    mLastTouchY = y;
-//                    mActivePointerId = event.getPointerId(0);
-
-                    break;
-                }
-
-                case MotionEvent.ACTION_MOVE: {
-                    final int pointerIndex = event.findPointerIndex(mActivePointerId);
-                    Log.i(TAG, "pointer index is: " + pointerIndex);
-                    final float x = event.getX(pointerIndex);
-                    final float y = event.getY(pointerIndex);
-
-
-                    // ScaleGestureDetector isn't processing a gesture.
-                    if (!mScaleDetector.isInProgress()) {
-                        final float dx = x - mLastTouchX;
-                        final float dy = y - mLastTouchY;
-
-                        mPosX += dx;
-                        mPosY += dy;
-
-                        invalidate();
-                    }
-
-                    mLastTouchX = x;
-                    mLastTouchY = y;
-
-                    break;
-                }
-//                case MotionEvent.ACTION_UP: {
-//                    mActivePointerId = INVALID_POINTER_ID;
-//                    break;
-//                }
-//
-//                case MotionEvent.ACTION_CANCEL: {
-//                    mActivePointerId = INVALID_POINTER_ID;
-//                    break;
-//                }
-
-                case MotionEvent.ACTION_POINTER_UP: {
-                    final int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK)
-                            >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-                    final int pointerId = event.getPointerId(pointerIndex);
-                    if (pointerId == mActivePointerId) {
-                        // This was our active pointer going up. Choose a new
-                        // active pointer and adjust accordingly.
-                        final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                        mLastTouchX = event.getX(newPointerIndex);
-                        mLastTouchY = event.getY(newPointerIndex);
-                        mActivePointerId = event.getPointerId(newPointerIndex);
-                    }
-                    break;
-                }
-            } */
             return true;
         } else {
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Need to check if the timer is set, if so dismiss it
-                    if(timer!=null){
+                    if (timer != null) {
                         stopTimer();
                     }
-                    drawPath.moveTo(touchX, touchY);
+                    if (selectionEnabled) {
+                        originalPoint = new Point(touchX, touchY);
+                        if (selectedRegion != null && selectedRegion.contains(originalPoint)) {
+                            moving = true;
+                        } else {
+                            deselect();
+                            drawPath.moveTo(touchX, touchY);
+                            MainActivity.updateDeleteItem(false);
+                        }
+                    } else {
+                        drawPath.moveTo(touchX, touchY);
+                    }
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    drawPath.lineTo(touchX, touchY);
-                    points.add(new Point(touchX, touchY, strokeCounter));
+                    if (moving) {
+                        float dx = touchX - (float) originalPoint.x;
+                        float dy = touchY - (float) originalPoint.y;
+                        drawPath.offset(dx, dy);
+                        originalPoint = new Point(touchX, touchY);
+                        for (Object selectedObject : selectedObjects) {
+                            if (selectedObject instanceof ClassDiagramObject) {
+                                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
+                                float newX = classDiagramObject.view.getX() + dx;
+                                float newY = classDiagramObject.view.getY() + dy;
+                                classDiagramObject.view.setX(newX);
+                                classDiagramObject.view.setY(newY);
+                                if (classDiagramObject.noteView != null) {
+                                    newX = classDiagramObject.noteView.getX() + dx;
+                                    newY = classDiagramObject.noteView.getY() + dy;
+                                    classDiagramObject.noteView.setX(newX);
+                                    classDiagramObject.noteView.setY(newY);
+                                }
+                            } else if (selectedObject instanceof NoteView) {
+                                NoteView noteView = (NoteView) selectedObject;
+                            }
+                        }
+                    } else {
+                        drawPath.lineTo(touchX, touchY);
+                        points.add(new Point(touchX, touchY, strokeCounter));
+                    }
                     break;
                 case MotionEvent.ACTION_UP:
+                    if (moving) {
+                        moving = false;
+                        break;
+                    }
+                    if (points.size() == 0) break;
+                    if (selectionEnabled) {
+                        drawPath.lineTo((float) points.get(0).x, (float) points.get(0).y);
+                        points.add(points.get(0));
+                    }
                     drawCanvas.drawPath(drawPath, drawPaint);
                     strokeCounter++;
 
@@ -289,7 +269,7 @@ public class DrawingView extends ViewGroup {
                         // set the timer for the recognizer to be called
                         startTimer();
                     } else {
-                        invalidate();
+                        performSelection();
                     }
 
                     break;
@@ -300,6 +280,61 @@ public class DrawingView extends ViewGroup {
             invalidate();
             return true;
         }
+    }
+
+    private void performSelection() {
+        selectedRegion = new Ellipse(points);
+
+        for (UMLObject umlObject : umlObjects) {
+            if (selectedRegion.contains(umlObject.view)) {
+                selectedObjects.add(umlObject);
+            }
+        }
+
+        for (NoteView noteView : notes) {
+            if (selectedRegion.contains(noteView)) {
+                selectedObjects.add(noteView);
+            }
+        }
+
+        points.clear();
+
+        if (selectedObjects.isEmpty()) clearPath();
+        else MainActivity.updateDeleteItem(true);
+    }
+
+    public void deleteSelected() {
+        ArrayList<Action> actions = new ArrayList<>();
+        for (Object selectedObject : selectedObjects) {
+            if (selectedObject instanceof ClassDiagramObject) {
+                ClassDiagramObject classDiagramObject = (ClassDiagramObject) selectedObject;
+                deleteUMLObject(classDiagramObject);
+                actions.add(new Action(Action.ActionType.REMOVED, classDiagramObject));
+            } else if (selectedObject instanceof NoteView) {
+                NoteView noteView = (NoteView) selectedObject;
+                if (noteView.getParent() != null) {
+                    deleteNote(noteView);
+                    actions.add(new Action(Action.ActionType.REMOVED, noteView));
+                }
+            }
+        }
+        backwardHistory.add(actions);
+        forwardHistory.clear();
+        updateUndoRedoItems();
+        deselect();
+    }
+
+    private void deselect() {
+        MainActivity.updateDeleteItem(false);
+        selectedObjects.clear();
+        clearPath();
+    }
+
+    private void clearPath() {
+        selectedRegion = null;
+        drawPath.reset();
+        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        invalidate();
     }
 
     public void setColor(String newColor){
@@ -328,12 +363,14 @@ public class DrawingView extends ViewGroup {
 
     public void setSelectionEnabled(boolean isSelecting){
         //set selectionEnabled true or false
-        selectionEnabled =isSelecting;
+        selectionEnabled = isSelecting;
 
-        if(selectionEnabled){
-            drawPaint.setPathEffect(pe);
+        if (selectionEnabled) {
+            drawPaint.setPathEffect(dashEffect);
         } else {
             // Otherwise we wanna clear the drawpath
+            deselect();
+            drawPaint.setPathEffect(null);
             drawPath.reset();
             drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         }
@@ -353,6 +390,10 @@ public class DrawingView extends ViewGroup {
         // Clear the references we're managing
         umlObjects.clear();
         notes.clear();
+        selectedObjects.clear();
+        backwardHistory.clear();
+        forwardHistory.clear();
+        updateUndoRedoItems();
 
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
@@ -408,23 +449,37 @@ public class DrawingView extends ViewGroup {
     private void performDeleteAction(List<Point> points) {
         UMLObject umlObj = getContainingUMLObject(points);
         if (umlObj != null) {
-            removeView(umlObj.view);
-            if (umlObj instanceof ClassDiagramObject) {
-                NoteView noteView = ((ClassDiagramObject) umlObj).noteView;
-                if (noteView != null) {
-                    removeView(noteView);
-                }
-            }
-            umlObjects.remove(umlObj);
-            invalidate();
+            deleteUMLObject(umlObj);
+            backwardHistory.add(Action.create(Action.ActionType.REMOVED, umlObj));
         } else {
             NoteView noteView = getContainingNoteView(points);
             if (noteView != null) {
-                removeView(noteView);
-                notes.remove(noteView);
-                invalidate();
+                deleteNote(noteView);
+                backwardHistory.add(Action.create(Action.ActionType.REMOVED, noteView));
             }
         }
+        forwardHistory.clear();
+        updateUndoRedoItems();
+    }
+
+    private UMLObject deleteUMLObject(UMLObject umlObject) {
+        removeView(umlObject.view);
+        if (umlObject instanceof ClassDiagramObject) {
+            NoteView noteView = ((ClassDiagramObject) umlObject).noteView;
+            if (noteView != null) {
+                deleteNote(noteView);
+            }
+        }
+        umlObjects.remove(umlObject);
+        invalidate();
+        return umlObject;
+    }
+
+    private NoteView deleteNote(NoteView noteView) {
+        removeView(noteView);
+        notes.remove(noteView);
+        invalidate();
+        return noteView;
     }
 
     private void performNoteAction(Point firstPoint) {
@@ -437,6 +492,9 @@ public class DrawingView extends ViewGroup {
             ((ClassDiagramObject) umlObj).noteView = view;
             addView(view);
             invalidate();
+            backwardHistory.add(Action.create(Action.ActionType.ADDED, view));
+            forwardHistory.clear();
+            updateUndoRedoItems();
         }
     }
 
@@ -452,6 +510,14 @@ public class DrawingView extends ViewGroup {
         return null;
     }
 
+    private UMLObject getContainingUMLObject(Point point) {
+        for (UMLObject umlObject : umlObjects) {
+            if (isPointInsideView(point, umlObject.view))
+                return umlObject;
+        }
+        return null;
+    }
+
     private NoteView getContainingNoteView(List<Point> points) {
         for (NoteView note : notes) {
             int count = 0;
@@ -460,14 +526,6 @@ public class DrawingView extends ViewGroup {
                     count++;
             }
             if ((double) count / points.size() >= 0.15) return note;
-        }
-        return null;
-    }
-
-    private UMLObject getContainingUMLObject(Point point) {
-        for (UMLObject umlObject : umlObjects) {
-            if (isPointInsideView(point, umlObject.view))
-                return umlObject;
         }
         return null;
     }
@@ -489,10 +547,12 @@ public class DrawingView extends ViewGroup {
             view.init(DrawingView.this.getContext());
             view.setX((float) leftMost.x);
             view.setY((float) topMost.y);
-            umlObjects.add(new ClassDiagramObject(view));
-            DrawingView.this.addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
-
-        // Relationships with decorators
+            UMLObject classDiagramObject = new ClassDiagramObject(view);
+            umlObjects.add(classDiagramObject);
+            addView(view, new LinearLayout.LayoutParams(tempSize.getWidth(), tempSize.getHeight()));
+            backwardHistory.add(Action.create(Action.ActionType.ADDED, classDiagramObject));
+            forwardHistory.clear();
+            updateUndoRedoItems();
         } else if(result.gesture == Gesture.NAVIGABLE || result.gesture == Gesture.AGGREGATION
                 || result.gesture == Gesture.GENERALIZATION || result.gesture == Gesture.REALIZATION
                 || result.gesture == Gesture.COMPOSITION || result.gesture == Gesture.DEPENDENCY
@@ -739,4 +799,53 @@ public class DrawingView extends ViewGroup {
             return true;
         }
     }
+
+    public void undoOrRedo(boolean undo) {
+        if (selectionEnabled) deselect();
+        ArrayList<ArrayList<Action>> history = undo ? backwardHistory : forwardHistory;
+        ArrayList<Action> actions = processActions(history.remove(history.size() - 1));
+        if (undo) forwardHistory.add(actions);
+        else backwardHistory.add(actions);
+        updateUndoRedoItems();
+    }
+
+    private void updateUndoRedoItems() {
+        MainActivity.undoItem.setEnabled(!backwardHistory.isEmpty());
+        MainActivity.redoItem.setEnabled(!forwardHistory.isEmpty());
+        MainActivity.undoItem.getIcon().setAlpha(backwardHistory.isEmpty() ? 50 : 255);
+        MainActivity.redoItem.getIcon().setAlpha(forwardHistory.isEmpty() ? 50 : 255);
+    }
+
+    private ArrayList<Action> processActions(ArrayList<Action> actions) {
+        for (Action action : actions) {
+            processAction(action);
+        }
+        return actions;
+    }
+
+    private Action processAction(Action action) {
+        switch (action.type) {
+            case ADDED:
+                if (action.isUMLObject) deleteUMLObject(action.umlObject);
+                if (action.noteView != null) deleteNote(action.noteView);
+                action.type = Action.ActionType.REMOVED;
+                break;
+            case REMOVED:
+                if (action.isUMLObject) {
+                    umlObjects.add(action.umlObject);
+                    addView(action.umlObject.view);
+                }
+                if (action.noteView != null) {
+                    notes.add(action.noteView);
+                    addView(action.noteView);
+                }
+                invalidate();
+                action.type = Action.ActionType.ADDED;
+                break;
+            case NONE:
+                break;
+        }
+        return action;
+    }
+
 }
