@@ -46,6 +46,10 @@ public class TemplateManager {
         }.getType();
         ArrayList<Template> t = GSON.fromJson(reader, listType);
 
+        if (t == null) {
+			resetTemplates(context);
+		}
+
         for (Template template : t) {
             if (!template.normalized) {
                 template.normalizePoints();
