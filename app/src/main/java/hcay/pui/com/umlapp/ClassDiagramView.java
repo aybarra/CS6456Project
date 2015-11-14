@@ -98,7 +98,7 @@ public class ClassDiagramView extends LinearLayout {
                 return false;
             }
         });
-
+        
         modeButton = (CircleButton) findViewById(R.id.typeButton);
         modeButton.setOnClickListener(new OnClickListener() {
             @Override
