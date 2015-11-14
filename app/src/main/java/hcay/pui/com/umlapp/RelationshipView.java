@@ -24,6 +24,7 @@ import hcay.pui.com.recognizer.Size;
  */
 public class RelationshipView extends View {
 
+    private int STROKE_WIDTH = 20;
     private final String TAG = "RELATIONSHIPVIEW";
 
     private ClassDiagramObject cdoSrc;
@@ -55,7 +56,7 @@ public class RelationshipView extends View {
         mPaint.setColor(Color.BLACK);
 
         mPaint.setAntiAlias(true);
-        mPaint.setStrokeWidth(20);
+        mPaint.setStrokeWidth(STROKE_WIDTH);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -65,58 +66,59 @@ public class RelationshipView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if(mGestureOrientation == GestureOrientation.LEFT_TO_RIGHT){
-            drawCanvas.drawLine(0, this.getMeasuredHeight() / 2, (float) (this.getMeasuredWidth() * .95), this.getMeasuredHeight() / 2, mPaint);
-//            Log.i(TAG, "drawLine occurring from : "+ this.getX(), );
-            addDecorator((this.getMeasuredWidth() * .95), this.getMeasuredHeight() / 2);
-        } else if(mGestureOrientation == GestureOrientation.RIGHT_TO_LEFT){
-            drawCanvas.drawLine((float)(this.getMeasuredWidth()*.95), this.getMeasuredHeight()/2, 0, this.getMeasuredHeight()/2, mPaint);
-        } else if(mGestureOrientation == GestureOrientation.BOTTOM_TO_TOP){
+        // Draw the line portion
+        android.graphics.Point decoratorLocation = drawLineSegments();
 
-        } else if(mGestureOrientation == GestureOrientation.TOP_TO_BOTTOM){
-
+        // Draw the arrow head from the position returned
+        if(decoratorLocation != null){
+            addDecorator(decoratorLocation);
         }
 
         canvas.drawBitmap(mRelBitmap, 0, 0, mPaint);
     }
 
-    public void addDecorator(double x, double y){
+    /**
+     * Draws the endpoint decorator for the relationship
+     * @param start
+     */
+    public void addDecorator(android.graphics.Point start){
         if(mGesture == Gesture.NAVIGABLE){
-            drawArrow(x, y);
+            DecoratorUtil.drawArrow(start, drawCanvas, mGestureOrientation, mPaint);
+        } else if(mGesture == Gesture.AGGREGATION){
+//            DecoratorUtil.drawDiamond(start, drawCanvas);
+        } else if(mGesture == Gesture.GENERALIZATION){
+
+        } else if(mGesture == Gesture.REALIZATION){
+
+        } else if(mGesture == Gesture.COMPOSITION){
+
+        } else if(mGesture == Gesture.DEPENDENCY){
+
+        } else if(mGesture == Gesture.REALIZATION_DEPENDENCY){
+
+        } else if(mGesture == Gesture.REQUIRED){
+
         }
     }
 
-    public void drawArrow(double x, double y){
-
-        android.graphics.Point a = new android.graphics.Point((int)x, (int)y);
-        android.graphics.Point b = null;
-        android.graphics.Point c = null;
-        android.graphics.Point d = null;
+    public android.graphics.Point drawLineSegments(){
         if(mGestureOrientation == GestureOrientation.LEFT_TO_RIGHT){
-            b = new android.graphics.Point((int)(x + this.getMeasuredWidth() * .05), (int)y);
-            c = new android.graphics.Point((int)(x - this.getMeasuredWidth() * .10), (int)(y-this.getMeasuredHeight()*.33));
-            d = new android.graphics.Point((int)(x - this.getMeasuredWidth() * .10), (int)(y+this.getMeasuredHeight()*.33));
+            drawCanvas.drawLine(0, this.getMeasuredHeight()/2, this.getMeasuredWidth()/2, this.getMeasuredHeight()/2, mPaint);
+            drawCanvas.drawLine(this.getMeasuredWidth()/2, this.getMeasuredHeight()/2, this.getMeasuredWidth()/2, (float)(STROKE_WIDTH*2.5), mPaint);
+            drawCanvas.drawLine(this.getMeasuredWidth()/2, (float)(STROKE_WIDTH*2.5), this.getMeasuredWidth()- STROKE_WIDTH*4, (float)(STROKE_WIDTH*2.5), mPaint);
 
+            return new android.graphics.Point(this.getMeasuredWidth()- STROKE_WIDTH*4, (int)(STROKE_WIDTH*2.5));
         } else if(mGestureOrientation == GestureOrientation.RIGHT_TO_LEFT){
-
-        } else if(mGestureOrientation == GestureOrientation.TOP_TO_BOTTOM){
+//            drawCanvas.drawLine((float)(this.getMeasuredWidth()*.95), this.getMeasuredHeight()/2, 0, this.getMeasuredHeight()/2, mPaint);
 
         } else if(mGestureOrientation == GestureOrientation.BOTTOM_TO_TOP){
 
+        } else if(mGestureOrientation == GestureOrientation.TOP_TO_BOTTOM){
+
         }
-
-        Path path = new Path();
-        path.setFillType(Path.FillType.EVEN_ODD);
-        path.moveTo(a.x, a.y);
-        path.lineTo(b.x, b.y);
-        path.moveTo(b.x, b.y);
-        path.lineTo(c.x, c.y);
-        path.moveTo(b.x, b.y);
-        path.lineTo(d.x, d.y);
-        path.close();
-
-        drawCanvas.drawPath(path, mPaint);
+        return null;
     }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         //view given size

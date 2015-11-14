@@ -16,4 +16,8 @@ public class Point {
     	return String.format("{x=%.3f,y=%.3f,id=%d}", x, y, strokeID);
     }
 
+    @Override
+    public boolean equals(Object b){
+        return this.x == ((Point)b).x && this.y == ((Point)b).y;
+    }
 }

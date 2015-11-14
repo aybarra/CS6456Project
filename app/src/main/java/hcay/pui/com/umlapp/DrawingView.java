@@ -5,11 +5,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.PathEffect;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -75,11 +73,20 @@ public class DrawingView extends ViewGroup {
 
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1.f;
-    private boolean mScaled = false;
-    private Rect clipBounds_canvas;
 
     private List<UMLObject> umlObjects;
     private List<NoteView> notes;
+
+    protected float mPosX;
+    protected float mPosY;
+    protected float mPosX0 = 0;     // initial displacement values
+    protected float mPosY0 = 0;
+    protected float mFocusX;
+    protected float mFocusY;
+    protected float mLastTouchX;
+    protected float mLastTouchY;
+    protected static final int INVALID_POINTER_ID = -1;
+    protected int mActivePointerId = INVALID_POINTER_ID;
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -129,11 +136,6 @@ public class DrawingView extends ViewGroup {
 
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
 
-//        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-//        Display display = wm.getDefaultDisplay();
-//        display.getSize(dispSize);
-//        dispWidth = dispSize.x;
-//        dispHeight = dispSize.y;
     }
 
     @Override
@@ -153,59 +155,47 @@ public class DrawingView extends ViewGroup {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
 
-//        clipBounds_canvas = canvas.getClipBounds();
-        // Notify children
-//        if(mScaled){
-//            for(int i = 0; i < getChildCount(); i++){
-//                ((ClassDiagram)getChildAt(i)).updateScale(mScaleFactor);
-//                ((ClassDiagram)getChildAt(i)).updateClip(clipBounds_canvas);
-//            }
-//            mScaled = false;
-//        }
-//        canvas.scale(mScaleFactor, mScaleFactor);
+        canvas.save();
 
-//        drawPaint.setStrokeWidth(brushSize * (1/mScaleFactor));
+        float x = 0, y = 0;
+        x = mPosX + mPosX0;
+        y = mPosY + mPosY0;
 
-        // Draw view
         // Original
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
-        // STACKOVERFLOW ATTEMPT
-//        drawEndlessBackground(canvas, this.getLeft(), this.getTop());
-//        Rect rectangle = canvas.getClipBounds();
-//        float val = 1/mScaleFactor;
-//        RectF dst = new RectF(rectangle.left*val, rectangle.top*val, rectangle.right*val, rectangle.bottom*val);
-//        canvas.drawBitmap(canvasBitmap, null, dst, drawPaint);
-
         canvas.drawPath(drawPath, drawPaint);
 
+        /*
+        // New stuff
+        if (mScaleDetector.isInProgress()) {
+            // Pinch zoom is in progress
+            // if (mSupportsPan) canvas.translate(mPosX, mPosY);
+            mFocusX = mScaleDetector.getFocusX();
+            mFocusY = mScaleDetector.getFocusY();
+            canvas.scale(mScaleFactor, mScaleFactor, mFocusX, mFocusY);
+            Log.d ("Multitouch", "+p+z x, y, focusX, focusY: " + x + " " + y + " " + mFocusX + " " + mFocusY);
+        } else {
+            // Pinch zoom is not in progress. Just do translation of canvas at whatever the current scale is.
+            canvas.translate(x, y);
+            canvas.scale(mScaleFactor, mScaleFactor);
+            Log.d ("Multitouch", "+p+z x, y : " + x + " " + y);
+        }*/
+
+        // Old stuff
         if(selectionEnabled){
             makeEffect();
             phase += 1;
             invalidate();
         }
-    }
 
-//    private void drawEndlessBackground(Canvas canvas, float left, float top) {
-//
-//        float modLeft = left % dispWidth;
-//
-//        canvas.drawBitmap(canvasBitmap, modLeft, top, null);
-//
-//        if (left < 0) {
-//            canvas.drawBitmap(canvasBitmap, modLeft + dispWidth, top, null);
-//        } else {
-//            canvas.drawBitmap(canvasBitmap, modLeft - dispWidth, top, null);
-//        }
-//    }
+        canvas.restore();
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
-        // New values
-//        float touchX = event.getX() / mScaleFactor + clipBounds_canvas.left;
-//        float touchY = event.getY() / mScaleFactor + clipBounds_canvas.top;
 
         // Original
         float touchX = event.getX();
@@ -214,9 +204,71 @@ public class DrawingView extends ViewGroup {
         if(event.getPointerCount() > 1) {
             mScaleDetector.onTouchEvent(event);
 
+            /*
+            final int action = event.getAction();
+            switch (action & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float x = event.getX();
+                    final float y = event.getY();
+
+                    mLastTouchX = x;
+                    mLastTouchY = y;
+//                    mActivePointerId = event.getPointerId(0);
+
+                    break;
+                }
+
+                case MotionEvent.ACTION_MOVE: {
+                    final int pointerIndex = event.findPointerIndex(mActivePointerId);
+                    Log.i(TAG, "pointer index is: " + pointerIndex);
+                    final float x = event.getX(pointerIndex);
+                    final float y = event.getY(pointerIndex);
+
+
+                    // ScaleGestureDetector isn't processing a gesture.
+                    if (!mScaleDetector.isInProgress()) {
+                        final float dx = x - mLastTouchX;
+                        final float dy = y - mLastTouchY;
+
+                        mPosX += dx;
+                        mPosY += dy;
+
+                        invalidate();
+                    }
+
+                    mLastTouchX = x;
+                    mLastTouchY = y;
+
+                    break;
+                }
+//                case MotionEvent.ACTION_UP: {
+//                    mActivePointerId = INVALID_POINTER_ID;
+//                    break;
+//                }
+//
+//                case MotionEvent.ACTION_CANCEL: {
+//                    mActivePointerId = INVALID_POINTER_ID;
+//                    break;
+//                }
+
+                case MotionEvent.ACTION_POINTER_UP: {
+                    final int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK)
+                            >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                    final int pointerId = event.getPointerId(pointerIndex);
+                    if (pointerId == mActivePointerId) {
+                        // This was our active pointer going up. Choose a new
+                        // active pointer and adjust accordingly.
+                        final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
+                        mLastTouchX = event.getX(newPointerIndex);
+                        mLastTouchY = event.getY(newPointerIndex);
+                        mActivePointerId = event.getPointerId(newPointerIndex);
+                    }
+                    break;
+                }
+            } */
             return true;
         } else {
-            switch (event.getAction()) {
+            switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Need to check if the timer is set, if so dismiss it
                     if(timer!=null){
@@ -312,7 +364,6 @@ public class DrawingView extends ViewGroup {
                 handler.post(new Runnable() {
                     public void run(){
                         if (points == null || points.isEmpty()) return;
-//                        Point first = points.get(0);
                         ArrayList<RecognizerResult> results = Recognizer.recognize(points);
                         Point leftMost = getLeftMost();
                         Point rightMost = getRightMost();
@@ -447,7 +498,7 @@ public class DrawingView extends ViewGroup {
                 || result.gesture == Gesture.COMPOSITION || result.gesture == Gesture.DEPENDENCY
                 || result.gesture == Gesture.REALIZATION_DEPENDENCY || result.gesture == Gesture.REQUIRED) {
 
-            GestureOrientation orientation = getGestureOrientation(bounds);
+            GestureOrientation orientation = OrientLocUtil.getGestureOrientation(bounds);
             Log.i(TAG, "Gesture orientation is: " + orientation.toString());
 
             // TODO: Figure out the two closest classfiers by index
@@ -456,7 +507,7 @@ public class DrawingView extends ViewGroup {
             if(orientation == GestureOrientation.LEFT_TO_RIGHT || orientation == GestureOrientation.RIGHT_TO_LEFT) {
                 int left = findClosestTo(leftMost, null);
                 if(left == -1){
-                    Toast.makeText(getContext(), "No class diagrams made yet", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Need two class diagrams to make a relationship", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 int right = findClosestTo(rightMost, umlObjects.get(left));
@@ -470,13 +521,13 @@ public class DrawingView extends ViewGroup {
                     objectSrc = (ClassDiagramObject)umlObjects.get(left);
                     objectDst = (ClassDiagramObject)umlObjects.get(right);
                 } else {
-                    objectDst = (ClassDiagramObject)umlObjects.get(left);
                     objectSrc = (ClassDiagramObject)umlObjects.get(right);
+                    objectDst = (ClassDiagramObject)umlObjects.get(left);
                 }
             } else {
                 int top = findClosestTo(topMost, null);
                 if(top == -1){
-                    Toast.makeText(getContext(), "No class diagrams made yet", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Need two class diagrams to make a relationship", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 int bottom = findClosestTo(bottomMost, umlObjects.get(top));
@@ -498,15 +549,15 @@ public class DrawingView extends ViewGroup {
             view.init(DrawingView.this.getContext(), objectSrc, objectDst, orientation, result.gesture);
 
             // TODO: Figure out the placement
-            android.graphics.Point location = getPlacementLocation(orientation, objectSrc);
+            android.graphics.Point location = OrientLocUtil.getPlacementLocation(orientation, objectSrc);
             view.setX((float) location.x);
             view.setY((float) location.y);
-            Toast.makeText(getContext(), "Placement of relationship is: " + location.x
-                                       + ", " + location.y, Toast.LENGTH_SHORT).show();
-
+            Toast.makeText(getContext(), "Placement of relationship is: " + location.toString(),
+                           Toast.LENGTH_SHORT).show();
 
             // TODO: Need to figure out the size to make the relationship
-            Size relationshipSize = new Size((int)Math.abs(leftMost.x-rightMost.x), (int)Math.abs(topMost.y-bottomMost.y));
+            Size relationshipSize = new Size(Math.abs(objectDst.getLocation().x-(objectSrc.getLocation().x+objectSrc.getSize().getWidth())),
+                                             (int)Math.abs((objectDst.getLocation().y+.5*objectDst.getSize().getHeight())-(.5*objectSrc.getSize().getHeight())));
             Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
             RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst, result.gesture);
             DrawingView.this.addView(view, new LinearLayout.LayoutParams(relationshipSize.getWidth(), relationshipSize.getHeight()));
@@ -517,23 +568,6 @@ public class DrawingView extends ViewGroup {
                 Toast.LENGTH_SHORT).show();
     }
 
-    public android.graphics.Point getPlacementLocation(GestureOrientation orientation, UMLObject src){
-        int height = src.getSize().getHeight();
-        int width = src.getSize().getWidth();
-        android.graphics.Point location = src.getLocation();
-        if(orientation == GestureOrientation.LEFT_TO_RIGHT){
-            location.x += width;
-            location.y += height/2;
-        } else if(orientation == GestureOrientation.RIGHT_TO_LEFT){
-            location.y += height/2;
-        } else if(orientation == GestureOrientation.TOP_TO_BOTTOM){
-            location.x += width/2;
-            location.y += height;
-        } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
-            location.x += width/2;
-        }
-        return location;
-    }
     /**
      *
      * @param target - Target location we want to be close to
@@ -560,49 +594,6 @@ public class DrawingView extends ViewGroup {
             }
         }
         return minIndex;
-    }
-    /**
-     *
-     * @param bounds
-     * @return
-     */
-    public GestureOrientation getGestureOrientation(Point [] bounds){
-        double midX;
-        double midY;
-
-        //{ left, right, top, bottom }
-        // Need to figure out which is longer
-        if(Math.abs(bounds[1].x-bounds[0].x) > Math.abs(bounds[2].y-bounds[3].y)){
-            // right-left is longer
-            // Figure out which direction its pointing
-            midX = (bounds[0].x + bounds[1].x)/2;
-            // This says the point is on the left
-            //     top
-            // left <-----|---------
-            //     bottom
-            if(bounds[0].x < midX && bounds[2].x < midX && bounds[3].x < midX){
-                return GestureOrientation.RIGHT_TO_LEFT;
-            } else {
-                return GestureOrientation.LEFT_TO_RIGHT;
-            }
-        } else{
-            // top-bottom is longer
-            midY = (bounds[2].y + bounds[3].y)/2;
-            // Figure out which direction its pointing
-            // Similarly
-            //      |
-            //      |
-            //    -----
-            //      |
-            //      |
-            // left V right
-            //    bottom
-            if(bounds[0].y > midY && bounds[1].y > midY && bounds[3].y > midY){
-                return GestureOrientation.TOP_TO_BOTTOM;
-            } else{
-                return GestureOrientation.BOTTOM_TO_TOP;
-            }
-        }
     }
 
     public void startTimer() {
@@ -672,7 +663,6 @@ public class DrawingView extends ViewGroup {
         gestureDialog.show();
     }
 
-
     private Point getLeftMost() {
         Point leftMost = new Point(Double.MAX_VALUE, Double.MAX_VALUE, -1);
         if(points != null){
@@ -734,6 +724,7 @@ public class DrawingView extends ViewGroup {
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             mScaleFactor *= detector.getScaleFactor();
@@ -744,12 +735,6 @@ public class DrawingView extends ViewGroup {
             DrawingView.this.setScaleX(mScaleFactor);
             DrawingView.this.setScaleY(mScaleFactor);
 
-//            int height = (int)(DrawingView.this.getHeight() * (1/mScaleFactor));
-//            int width = (int)(DrawingView.this.getWidth() * (1/mScaleFactor));
-//            DrawingView.this.setLayoutParams(new LinearLayout.LayoutParams(width, height));
-            Log.i(TAG, "HEIGHT IS: " + DrawingView.this.getHeight() + " WIDTH IS: " + DrawingView.this.getWidth());
-            // Resize when views new size would be smaller than the view size
-            mScaled = true;
             invalidate();
             return true;
         }
