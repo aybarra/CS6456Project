@@ -6,8 +6,6 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Matrix;
 import android.graphics.PathEffect;
-
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -102,7 +100,6 @@ public class DrawingView extends ViewGroup {
     private boolean isViewMode = false;
 
     private final int CLASSIFIER_MIN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics());
-    private final int CLASSIFIER_MIN_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 260, getResources().getDisplayMetrics());
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -592,7 +589,7 @@ public class DrawingView extends ViewGroup {
             view.setY((float) topMost.y);
             UMLObject classDiagramObject = new ClassDiagramObject(view);
             umlObjects.add(classDiagramObject);
-            addView(view, new LinearLayout.LayoutParams(Math.max(tempSize.getWidth(), CLASSIFIER_MIN_WIDTH), Math.max(tempSize.getHeight(), CLASSIFIER_MIN_HEIGHT)));
+            addView(view, new LinearLayout.LayoutParams(Math.max(tempSize.getWidth(), CLASSIFIER_MIN_WIDTH), LayoutParams.WRAP_CONTENT));
             backwardHistory.add(Action.create(Action.ActionType.ADDED, classDiagramObject));
             forwardHistory.clear();
             updateUndoRedoItems();
