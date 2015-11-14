@@ -27,9 +27,7 @@ public class ClassDiagramView extends LinearLayout {
     private CircleButton dragButton, modeButton;
     private EditText nameEditText;
     private View separator;
-
-    private View separator;
-
+    
     private final String TAG = "CLASS_DIAGRAM_VIEW";
     private float prevX, prevY;
     private boolean isClass = true;
