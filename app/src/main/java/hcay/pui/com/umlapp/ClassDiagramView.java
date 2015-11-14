@@ -22,9 +22,12 @@ public class ClassDiagramView extends LinearLayout {
 
     public FeatureAdapter memberAdapter, methodAdapter;
     public ClassDiagramObject classDiagramObject;
+    public ListView memberListView, methodListView;
+    public Button addMember, addMethod;
 
     private final String TAG = "CLASS_DIAGRAM_VIEW";
     private float prevX, prevY;
+    private boolean isClass = true;
 
     public ClassDiagramView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -36,11 +39,11 @@ public class ClassDiagramView extends LinearLayout {
     }
 
     public void init(Context context){
-        ListView memberListView = (ListView)findViewById(R.id.memberListView);
+        memberListView = (ListView)findViewById(R.id.memberListView);
         memberAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), true);
         memberListView.setAdapter(memberAdapter);
 
-        Button addMember = (Button)findViewById(R.id.addMemberBtn);
+        addMember = (Button)findViewById(R.id.addMemberBtn);
         addMember.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,11 +52,11 @@ public class ClassDiagramView extends LinearLayout {
             }
         });
 
-        ListView methodListView = (ListView)findViewById(R.id.methodListView);
+        methodListView = (ListView)findViewById(R.id.methodListView);
         methodAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), false);
         methodListView.setAdapter(methodAdapter);
 
-        Button addMethod = (Button)findViewById(R.id.addMethodBtn);
+        addMethod = (Button)findViewById(R.id.addMethodBtn);
         addMethod.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,6 +90,16 @@ public class ClassDiagramView extends LinearLayout {
                         break;
                 }
                 return false;
+            }
+        });
+
+        CircleButton modeButton = (CircleButton) findViewById(R.id.typeButton);
+        modeButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                memberListView.setVisibility(isClass ? GONE : VISIBLE);
+                addMember.setVisibility(isClass ? GONE : VISIBLE);
+                isClass = !isClass;
             }
         });
     }
