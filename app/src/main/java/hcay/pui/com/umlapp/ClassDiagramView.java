@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -24,7 +25,7 @@ public class ClassDiagramView extends LinearLayout {
     public ClassDiagramObject classDiagramObject;
     private ListView memberListView, methodListView;
     private Button addMember, addMethod;
-    private CircleButton dragButton, modeButton;
+    private CircleButton dragButton, typeButton;
     private EditText nameEditText;
     private View separator;
 
@@ -42,7 +43,7 @@ public class ClassDiagramView extends LinearLayout {
     }
 
     public void init(Context context){
-        nameEditText = (EditText) findViewById(R.id.editText);
+        nameEditText = (EditText) findViewById(R.id.titleLabel);
         separator = findViewById(R.id.separator);
 
         memberListView = (ListView) findViewById(R.id.memberListView);
@@ -99,14 +100,18 @@ public class ClassDiagramView extends LinearLayout {
             }
         });
 
-        modeButton = (CircleButton) findViewById(R.id.typeButton);
-        modeButton.setOnClickListener(new OnClickListener() {
+        final TextView typeLabel = (TextView) findViewById(R.id.typeLabel);
+        typeButton = (CircleButton) findViewById(R.id.typeButton);
+        typeButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 isClass = !isClass;
                 memberListView.setVisibility(isClass ? VISIBLE : GONE);
                 addMember.setVisibility(isClass ? VISIBLE : GONE);
                 separator.setVisibility(isClass ? VISIBLE : GONE);
+                typeLabel.setText(isClass ? "C" : "I");
+                nameEditText.setHint(isClass ? "<Class Name>" : "<Interface Name>");
+
             }
         });
     }
@@ -135,7 +140,7 @@ public class ClassDiagramView extends LinearLayout {
         addMember.setVisibility(toViewMode || !isClass ? GONE : VISIBLE);
         addMethod.setVisibility(toViewMode ? GONE : VISIBLE);
         dragButton.setVisibility(toViewMode ? GONE : VISIBLE);
-        modeButton.setVisibility(toViewMode ? GONE : VISIBLE);
+        typeButton.setVisibility(toViewMode ? GONE : VISIBLE);
         nameEditText.clearFocus();
         nameEditText.setClickable(!toViewMode);
         nameEditText.setFocusableInTouchMode(!toViewMode);
