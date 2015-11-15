@@ -278,7 +278,13 @@ public class DrawingView extends ViewGroup {
             }
             return true;
         } else {
-            if (isViewMode) return true;
+            if (isViewMode) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    prevX = event.getX();
+                    prevY = event.getY();
+                }
+                return true;
+            }
             if (gestureMode != GestureMode.NONE && event.getAction() != MotionEvent.ACTION_UP) {
                 return true;
             }
