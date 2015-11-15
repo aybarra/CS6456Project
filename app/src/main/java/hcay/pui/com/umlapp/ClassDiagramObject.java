@@ -1,12 +1,7 @@
 package hcay.pui.com.umlapp;
 
-import android.widget.LinearLayout;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import hcay.pui.com.recognizer.Gesture;
-import hcay.pui.com.recognizer.Size;
 
 /**
  * Created by andrasta on 11/12/15.
@@ -14,20 +9,20 @@ import hcay.pui.com.recognizer.Size;
 public class ClassDiagramObject extends UMLObject {
 
     public NoteView noteView;
-
-    private List<Relationship> relationshipList;
+    public List<Relationship> relationships;
 
     public ClassDiagramObject(ClassDiagramView view) {
         super(view);
         view.classDiagramObject = this;
-        relationshipList = new ArrayList<>();
+        relationships = new ArrayList<>();
     }
 
     public void addRelationship(Relationship relationship) {
-        relationshipList.add(relationship);
+        if (!relationships.contains(relationship))
+            relationships.add(relationship);
     }
 
     public void removeRelationship(Relationship relationship) {
-        relationshipList.remove(relationship);
+        relationships.remove(relationship);
     }
 }
