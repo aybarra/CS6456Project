@@ -59,6 +59,7 @@
         android:layout_marginRight="40dp"
         android:scaleType="fitCenter"
         android:background="@drawable/clear_button_selector"
+        android:onClick="onClick"
         android:id="@+id/clear_button"
         android:contentDescription="clearDiagram" />
 
