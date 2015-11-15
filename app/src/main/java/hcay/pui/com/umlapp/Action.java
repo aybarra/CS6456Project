@@ -9,6 +9,7 @@ public class Action {
     public ActionType type = ActionType.NONE;
     public NoteView noteView;
     public UMLObject umlObject;
+    public Relationship relationship;
     public boolean isUMLObject;
 
     public Action(ActionType type, NoteView noteView) {
@@ -24,6 +25,12 @@ public class Action {
         this.isUMLObject = true;
     }
 
+    public Action(ActionType type, Relationship relationship) {
+        this.type = type;
+        this.relationship = relationship;
+        this.isUMLObject = true;
+    }
+
     public static ArrayList<Action> create(ActionType type, NoteView noteView) {
         ArrayList<Action> list = new ArrayList<>();
         list.add(new Action(type, noteView));
@@ -33,6 +40,12 @@ public class Action {
     public static ArrayList<Action> create(ActionType type, UMLObject umlObject) {
         ArrayList<Action> list = new ArrayList<>();
         list.add(new Action(type, umlObject));
+        return list;
+    }
+
+    public static ArrayList<Action> create(ActionType type, Relationship relationship) {
+        ArrayList<Action> list = new ArrayList<>();
+        list.add(new Action(type, relationship));
         return list;
     }
 
