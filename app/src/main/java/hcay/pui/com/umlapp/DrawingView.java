@@ -738,7 +738,7 @@ public class DrawingView extends ViewGroup {
             SegmentTuple tuple = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
             Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
             if(tuple != null) {
-                Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation, relCanvas, drawPaint);
+                Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation);
             }
         }
         Toast.makeText(DrawingView.this.getContext(),
