@@ -789,7 +789,7 @@ public class DrawingView extends ViewGroup {
             Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
 
             Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation);
-            drawCanvas.drawPath(fullPath, drawPaint);
+            relCanvas.drawPath(fullPath, drawPaint);
             Relationship relationship = new Relationship(relationshipSize, null, fullPath, objectSrc, objectDst);
             objectSrc.addRelationship(relationship);
             objectDst.addRelationship(relationship);
