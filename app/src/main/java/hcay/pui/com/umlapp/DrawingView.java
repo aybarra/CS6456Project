@@ -122,6 +122,7 @@ public class DrawingView extends ViewGroup {
     private static float MIN_SCALE_FACTOR = 0;
 
     private final int CLASSIFIER_MIN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics());
+    private final int STROKE_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics());
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -191,6 +192,8 @@ public class DrawingView extends ViewGroup {
         notes = new ArrayList<>();
 
         scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
+
+        DecoratorUtil.setStrokeWidth(STROKE_WIDTH);
     }
 
     @Override
@@ -784,19 +787,16 @@ public class DrawingView extends ViewGroup {
 //            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight());
 
-            android.graphics.Point p = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
-            if (p != null) {
-                DecoratorUtil.addDecorator(p, result.gesture, orientation, relCanvas, drawPaint);
-                Relationship relationship = new Relationship(relationshipSize, null, null, objectSrc, objectDst);
-                objectSrc.addRelationship(relationship);
-                objectDst.addRelationship(relationship);
-                relationships.add(relationship);
-                backwardHistory.add(Action.create(Action.ActionType.ADDED, relationship));
-                forwardHistory.clear();
-                updateUndoRedoItems();
-            } else {
-                Toast.makeText(this.getContext(), "Draw line segment branch not implemented", Toast.LENGTH_SHORT).show();
-            }
+            SegmentTuple tuple = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
+            Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
+            Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation, relCanvas, drawPaint);
+            Relationship relationship = new Relationship(relationshipSize, null, null, objectSrc, objectDst);
+            objectSrc.addRelationship(relationship);
+            objectDst.addRelationship(relationship);
+            relationships.add(relationship);
+            backwardHistory.add(Action.create(Action.ActionType.ADDED, relationship));
+            forwardHistory.clear();
+            updateUndoRedoItems();
         }
         Toast.makeText(DrawingView.this.getContext(),
                 "Results were size 1, gesture="+ result.gesture.toString(),
