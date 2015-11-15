@@ -119,6 +119,7 @@ public class DrawingView extends ViewGroup {
     private static float MIN_SCALE_FACTOR = 0;
 
     private final int CLASSIFIER_MIN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics());
+    private final int STROKE_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics());
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -188,6 +189,8 @@ public class DrawingView extends ViewGroup {
         notes = new ArrayList<>();
 
         scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
+
+        DecoratorUtil.setStrokeWidth(STROKE_WIDTH);
     }
 
     @Override
@@ -732,11 +735,10 @@ public class DrawingView extends ViewGroup {
 
             objectSrc.addRelationship(objectDst, result.gesture);
             objectDst.addRelationship(objectSrc, result.gesture);
-            android.graphics.Point p = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
-            if(p != null) {
-                DecoratorUtil.addDecorator(p, result.gesture, orientation, relCanvas, drawPaint);
-            } else {
-                Toast.makeText(this.getContext(), "Draw line segment branch not implemented", Toast.LENGTH_SHORT).show();
+            SegmentTuple tuple = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
+            Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
+            if(tuple != null) {
+                Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation, relCanvas, drawPaint);
             }
         }
         Toast.makeText(DrawingView.this.getContext(),

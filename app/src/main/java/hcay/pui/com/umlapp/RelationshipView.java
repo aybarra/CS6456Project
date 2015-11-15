@@ -80,7 +80,7 @@ public class RelationshipView extends View {
     public void addDecorator(android.graphics.Point start){
         switch(relObject.mGesture){
             case NAVIGABLE:
-                DecoratorUtil.drawArrow(start, drawCanvas, relObject.mOrientation, mPaint);
+//                DecoratorUtil.drawArrow(start, drawCanvas, relObject.mOrientation, mPaint);
                 break;
             case AGGREGATION:
                 break;
