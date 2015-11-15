@@ -71,11 +71,6 @@ public class OrientLocUtil {
             location.x += src.getSize().getWidth() / 2;
             location.y += src.getSize().getHeight();
         }
-//        } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
-//            location = dst.getLocation();
-//            location.x += dst.getSize().getWidth()/2;
-//            location.y += dst.getSize().getHeight();
-//        }
         return location;
     }
 
@@ -101,16 +96,14 @@ public class OrientLocUtil {
                 size = new Size(width, height+PADDING);
                 break;
             case RIGHT_TO_LEFT:
-//                size = new Size(Math.abs(src.getLocation().x-(dst.getLocation().x+dst.getSize().getWidth())),
-//                        (int)Math.abs((dst.getLocation().y+.5*dst.getSize().getHeight())-(.5*dst.getSize().getHeight())));
-                width = Math.abs((src.getLocation().x-dst.getLocation().x+dst.getSize().getWidth()));
+                width = Math.abs((src.getLocation().x-(dst.getLocation().x+dst.getSize().getWidth())));
 
                 // Going up
                 if(src.getLocation().y > dst.getLocation().y){
-                    height = (dst.getLocation().y+dst.getSize().getHeight()/2)-(src.getLocation().y + src.getSize().getHeight()/2);
+                    height = Math.abs((dst.getLocation().y+dst.getSize().getHeight()/2)-(src.getLocation().y + src.getSize().getHeight()/2));
                     // Going down
                 } else if(src.getLocation().y < dst.getLocation().y) {
-                    height = (src.getLocation().y+src.getSize().getHeight()/2)-(dst.getLocation().y+dst.getSize().getHeight()/2);
+                    height = Math.abs((src.getLocation().y+src.getSize().getHeight()/2)-(dst.getLocation().y+dst.getSize().getHeight()/2));
                 } else {
                     // Default to 50?
                     height = 50;
@@ -119,8 +112,32 @@ public class OrientLocUtil {
                 size = new Size(width, height+PADDING);
                 break;
             case TOP_TO_BOTTOM:
+                height = Math.abs(dst.getLocation().y - (src.getLocation().y+src.getSize().getHeight()));
+
+                // Going left
+                if(src.getLocation().x > dst.getLocation().x){
+                    width = Math.abs((src.getLocation().x+src.getSize().getWidth()/2) - (dst.getLocation().x+dst.getSize().getWidth()/2));
+                // Going right
+                } else if(src.getLocation().x < dst.getLocation().x){
+                    width = Math.abs((dst.getLocation().x+dst.getSize().getWidth()/2) - (src.getLocation().x+src.getSize().getWidth()));
+                } else {
+                    width = 50;
+                }
+                size = new Size(width, height);
                 break;
             case BOTTOM_TO_TOP:
+                height = Math.abs(src.getLocation().y - (dst.getLocation().y+dst.getSize().getHeight()));
+
+                // Going left
+                if(src.getLocation().x > dst.getLocation().x){
+                    width = Math.abs((src.getLocation().x+src.getSize().getWidth()/2) - (dst.getLocation().x+dst.getSize().getWidth()/2));
+                    // Going right
+                } else if(src.getLocation().x < dst.getLocation().x){
+                    width = Math.abs((dst.getLocation().x+dst.getSize().getWidth()/2) - (src.getLocation().x+src.getSize().getWidth()));
+                } else {
+                    width = 50;
+                }
+                size = new Size(width, height);
                 break;
         }
         return size;

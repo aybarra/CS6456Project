@@ -46,6 +46,8 @@ public class ClassDiagramView extends LinearLayout {
         nameEditText = (EditText) findViewById(R.id.titleLabel);
         separator = findViewById(R.id.separator);
 
+        separator = findViewById(R.id.separator);
+
         memberListView = (ListView) findViewById(R.id.memberListView);
         memberAdapter = new FeatureAdapter(context, new ArrayList<Feature>(), true);
         memberListView.setAdapter(memberAdapter);

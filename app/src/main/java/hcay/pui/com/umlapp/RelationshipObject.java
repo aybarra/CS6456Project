@@ -12,12 +12,16 @@ public class RelationshipObject extends UMLObject {
     ClassDiagramObject cdoDst;
 
     Gesture mGesture;
+    GestureOrientation mOrientation;
 
-    public RelationshipObject(RelationshipView view, ClassDiagramObject cdoSrc, ClassDiagramObject cdoDst, Gesture gesture){
+    public RelationshipObject(RelationshipView view, ClassDiagramObject cdoSrc, ClassDiagramObject cdoDst,
+                              GestureOrientation orientation, Gesture gesture){
         super(view);
 
+        view.relObject = this;
         this.cdoSrc = cdoSrc;
         this.cdoDst = cdoDst;
         this.mGesture = gesture;
+        this.mOrientation = orientation;
     }
 }

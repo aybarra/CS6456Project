@@ -4,7 +4,10 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Matrix;
 import android.graphics.PathEffect;
+
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -29,6 +32,8 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -56,6 +61,10 @@ public class DrawingView extends ViewGroup {
     private Canvas drawCanvas;
     // canvas bitmap
     private Bitmap canvasBitmap;
+
+    private Canvas relCanvas;
+    private Bitmap relBitmap;
+
     private float brushSize, lastBrushSize;
     private boolean selectionEnabled = false;
 
@@ -97,7 +106,7 @@ public class DrawingView extends ViewGroup {
 
     private boolean isViewMode = false;
 
-    private static final int MAX_CANVAS_WIDTH = 10000;
+    private static final int MAX_CANVAS_WIDTH = 7500;
     private static int MAX_CANVAS_HEIGHT;
     private GestureMode gestureMode = GestureMode.NONE;
     private ScaleGestureDetector scaleDetector;
@@ -188,8 +197,12 @@ public class DrawingView extends ViewGroup {
         MIN_SCALE_FACTOR = (float) screenWidth / w;
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
+
         setX(-(w / 2.0f - screenWidth / 2.0f));
         setY(-(h / 2.0f - screenHeight / 2.0f));
+
+        relBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        relCanvas = new Canvas(relBitmap);
     }
 
     @Override
@@ -198,6 +211,10 @@ public class DrawingView extends ViewGroup {
 
         canvas.save();
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
+
+        // New stuff
+        canvas.drawBitmap(relBitmap, 0, 0, canvasPaint);
+
         canvas.drawPath(drawPath, drawPaint);
         canvas.restore();
     }
@@ -697,14 +714,13 @@ public class DrawingView extends ViewGroup {
                 }
             }
 
-            RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
-            view.init(DrawingView.this.getContext(), objectSrc, objectDst, orientation, result.gesture);
-
-            // Figure out the placement location
-            android.graphics.Point location = OrientLocUtil.getPlacementLocation(orientation, objectSrc, objectDst);
-            view.setX((float) location.x);
-            view.setY((float) location.y);
-            Log.d(TAG, "Relation was placed: " + location.toString());
+//            RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
+//
+//            // Figure out the placement location
+//            android.graphics.Point location = OrientLocUtil.getPlacementLocation(orientation, objectSrc, objectDst);
+//            view.setX((float) location.x);
+//            view.setY((float) location.y);
+//            Log.d(TAG, "Relation was placed: " + location.toString());
 //            Toast.makeText(getContext(), "Placement of relationship is: " + location.toString(),
 //                           Toast.LENGTH_SHORT).show();
 
@@ -712,9 +728,13 @@ public class DrawingView extends ViewGroup {
             Size relationshipSize = OrientLocUtil.getRelationshipSize(objectSrc, objectDst, orientation);
 //            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight());
-            RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst, result.gesture);
-            DrawingView.this.addView(view, new LinearLayout.LayoutParams(relationshipSize.getWidth(), relationshipSize.getHeight()));
-            umlObjects.add(relationship);
+//            RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst, orientation, result.gesture);
+//            addView(view, new LinearLayout.LayoutParams(relationshipSize.getWidth(), relationshipSize.getHeight()));
+//            view.init(DrawingView.this.getContext());
+//            umlObjects.add(relationship);
+            android.graphics.Point p = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
+            DecoratorUtil.addDecorator(p, result.gesture, orientation, relCanvas, drawPaint);
+
         }
         Toast.makeText(DrawingView.this.getContext(),
                 "Results were size 1, gesture="+ result.gesture.toString(),
@@ -725,7 +745,7 @@ public class DrawingView extends ViewGroup {
      *
      * @param target - Target location we want to be close to
      * @param disregard - In case this is called in succession, you can look at all except disregard
-     * @return - index of uml object in our umlobjects arraylist, -1 if there is none
+     * @return - index of uml object in our umlobjects arraylist, -1 if there are none
      */
     public int findClosestTo(Point target, UMLObject disregard){
 
@@ -738,11 +758,21 @@ public class DrawingView extends ViewGroup {
                 if(disregard != null && obj.equals(disregard)){
                     continue;
                 }
-                double ptDistance = Math.sqrt(Math.pow((obj.getLocation().x - target.x),2)
-                                  + Math.pow((obj.getLocation().y - target.y),2));
-                if(ptDistance < distance){
-                    distance = ptDistance;
+                double tpLeft = Math.sqrt(Math.pow((obj.getLocation().x - target.x),2)
+                                             + Math.pow((obj.getLocation().y - target.y),2));
+                double tpRight = Math.sqrt(Math.pow((obj.getLocation().x+obj.getSize().getWidth()-target.x),2)
+                                             + Math.pow((obj.getLocation().y-target.y),2));
+                double btmLeft = Math.sqrt(Math.pow((obj.getLocation().x - target.x),2)
+                                             + Math.pow((obj.getLocation().y+obj.getSize().getHeight()-target.y),2));
+                double btmRight = Math.sqrt(Math.pow((obj.getLocation().x+obj.getSize().getWidth() - target.x),2)
+                                             + Math.pow((obj.getLocation().y+obj.getSize().getHeight()-target.y),2));
+                if(tpLeft < distance || btmLeft < distance || tpRight < distance || btmRight < distance){
+                    // Taking the min index
                     minIndex = i;
+
+                    // distance is set to the minimum of the 4 corners
+                    List<Double> list = Arrays.asList(tpLeft,tpRight,btmLeft,btmRight);
+                    distance = Collections.min(list);
                 }
             }
         }
@@ -798,7 +828,7 @@ public class DrawingView extends ViewGroup {
                     TemplateManager.addNewTemplate(tempGesture, points);
                     TemplateManager.save(getContext());
                     Log.i(TAG + "DIALOG", "ID is: " + v.getId());
-                    // TODO Get the result that corresponds to this button
+                    // Get the result that corresponds to this button
                     performGestureAction(results.get(v.getId()), bounds);
                     gestureDialog.dismiss();
                 }
