@@ -15,30 +15,19 @@ public class ClassDiagramObject extends UMLObject {
 
     public NoteView noteView;
 
-    private List<Tuple> relationshipList;
-//    private List<String> memberVars;
-//    private List<String> methods;
+    private List<Relationship> relationshipList;
 
-    public ClassDiagramObject(ClassDiagramView view){
+    public ClassDiagramObject(ClassDiagramView view) {
         super(view);
-
         view.classDiagramObject = this;
-
         relationshipList = new ArrayList<>();
-//        memberVars = new ArrayList<>();
-//        methods = new ArrayList<>();
     }
 
-    public void addRelationship(ClassDiagramObject dst, Gesture gesture){
-        relationshipList.add(new Tuple(dst,gesture));
+    public void addRelationship(Relationship relationship) {
+        relationshipList.add(relationship);
     }
 
-    private class Tuple<ClassDiagramObject, Gesture> {
-        ClassDiagramObject object;
-        Gesture gesture;
-        public Tuple(ClassDiagramObject obj, Gesture gesture){
-            this.object = obj;
-            this.gesture = gesture;
-        }
+    public void removeRelationship(Relationship relationship) {
+        relationshipList.remove(relationship);
     }
 }
