@@ -43,7 +43,13 @@ public class DecoratorUtil {
             c = new android.graphics.Point((b.x + DISPLACEMENT*4), start.y-DISPLACEMENT*2);
             d = new android.graphics.Point(c.x, (start.y+DISPLACEMENT*2));
         } else if(orientation == GestureOrientation.TOP_TO_BOTTOM){
-
+            b = new android.graphics.Point(start.x, start.y + DISPLACEMENT*3);
+            c = new android.graphics.Point(start.x-DISPLACEMENT*2, (b.y - DISPLACEMENT*4));
+            d = new android.graphics.Point(start.x+DISPLACEMENT*2, c.y);
+            //            Log.i(TAG, "Value of start is: "+ start.toString());
+            Log.i(TAG, "Value of b is: " + b.toString());
+            Log.i(TAG, "Value of c is: " + c.toString());
+            Log.i(TAG, "Value of d is: " + d.toString());
         } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
 
         }
@@ -136,11 +142,12 @@ public class DecoratorUtil {
                                        cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
                                        mPaint);
                     relCanvas.drawLine(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
-                                       cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y,
+                                       cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y-STROKE_WIDTH*4,
                                        mPaint);
-                // Going right
+                    lineEnd = new android.graphics.Point(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y-STROKE_WIDTH*4);
+                    // Going right
                 } else if(cdoSrc.getLocation().x <= cdoSrc.getLocation().x){
-
+                    
                 }
                 break;
             case BOTTOM_TO_TOP:

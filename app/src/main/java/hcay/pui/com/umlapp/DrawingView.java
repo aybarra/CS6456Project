@@ -828,7 +828,7 @@ public class DrawingView extends ViewGroup {
                     TemplateManager.addNewTemplate(tempGesture, points);
                     TemplateManager.save(getContext());
                     Log.i(TAG + "DIALOG", "ID is: " + v.getId());
-                    // TODO Get the result that corresponds to this button
+                    // Get the result that corresponds to this button
                     performGestureAction(results.get(v.getId()), bounds);
                     gestureDialog.dismiss();
                 }

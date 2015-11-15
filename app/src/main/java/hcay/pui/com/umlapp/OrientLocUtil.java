@@ -112,17 +112,32 @@ public class OrientLocUtil {
                 size = new Size(width, height+PADDING);
                 break;
             case TOP_TO_BOTTOM:
+                height = Math.abs(dst.getLocation().y - (src.getLocation().y+src.getSize().getHeight()));
+
                 // Going left
                 if(src.getLocation().x > dst.getLocation().x){
-
+                    width = Math.abs((src.getLocation().x+src.getSize().getWidth()/2) - (dst.getLocation().x+dst.getSize().getWidth()/2));
                 // Going right
                 } else if(src.getLocation().x < dst.getLocation().x){
-
+                    width = Math.abs((dst.getLocation().x+dst.getSize().getWidth()/2) - (src.getLocation().x+src.getSize().getWidth()));
                 } else {
-                    
+                    width = 50;
                 }
+                size = new Size(width, height);
                 break;
             case BOTTOM_TO_TOP:
+                height = Math.abs(src.getLocation().y - (dst.getLocation().y+dst.getSize().getHeight()));
+
+                // Going left
+                if(src.getLocation().x > dst.getLocation().x){
+                    width = Math.abs((src.getLocation().x+src.getSize().getWidth()/2) - (dst.getLocation().x+dst.getSize().getWidth()/2));
+                    // Going right
+                } else if(src.getLocation().x < dst.getLocation().x){
+                    width = Math.abs((dst.getLocation().x+dst.getSize().getWidth()/2) - (src.getLocation().x+src.getSize().getWidth()));
+                } else {
+                    width = 50;
+                }
+                size = new Size(width, height);
                 break;
         }
         return size;
