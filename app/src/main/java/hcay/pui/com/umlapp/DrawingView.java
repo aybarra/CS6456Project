@@ -206,8 +206,8 @@ public class DrawingView extends ViewGroup {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
 
         canvas.save();
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
@@ -217,6 +217,11 @@ public class DrawingView extends ViewGroup {
 
         canvas.drawPath(drawPath, drawPaint);
         canvas.restore();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -278,7 +283,14 @@ public class DrawingView extends ViewGroup {
             }
             return true;
         } else {
-            if (isViewMode) return true;
+            if (isViewMode) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    prevX = event.getX();
+                    prevY = event.getY();
+                }
+                return true;
+            }
+
             if (gestureMode != GestureMode.NONE && event.getAction() != MotionEvent.ACTION_UP) {
                 return true;
             }
