@@ -733,7 +733,11 @@ public class DrawingView extends ViewGroup {
 //            view.init(DrawingView.this.getContext());
 //            umlObjects.add(relationship);
             android.graphics.Point p = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
-            DecoratorUtil.addDecorator(p, result.gesture, orientation, relCanvas, drawPaint);
+            if(p != null) {
+                DecoratorUtil.addDecorator(p, result.gesture, orientation, relCanvas, drawPaint);
+            } else {
+                Toast.makeText(this.getContext(), "Draw line segment branch not implemented", Toast.LENGTH_SHORT).show();
+            }
 
         }
         Toast.makeText(DrawingView.this.getContext(),

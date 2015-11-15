@@ -37,7 +37,6 @@ public class DecoratorUtil {
 //            Log.i(TAG, "Value of b is: " + b.toString());
 //            Log.i(TAG, "Value of c is: " + c.toString());
 //            Log.i(TAG, "Value of d is: " + d.toString());
-
         } else if(orientation == GestureOrientation.RIGHT_TO_LEFT){
             b = new android.graphics.Point((start.x - DISPLACEMENT*3), start.y);
             c = new android.graphics.Point((b.x + DISPLACEMENT*4), start.y-DISPLACEMENT*2);
@@ -46,12 +45,10 @@ public class DecoratorUtil {
             b = new android.graphics.Point(start.x, start.y + DISPLACEMENT*3);
             c = new android.graphics.Point(start.x-DISPLACEMENT*2, (b.y - DISPLACEMENT*4));
             d = new android.graphics.Point(start.x+DISPLACEMENT*2, c.y);
-            //            Log.i(TAG, "Value of start is: "+ start.toString());
-            Log.i(TAG, "Value of b is: " + b.toString());
-            Log.i(TAG, "Value of c is: " + c.toString());
-            Log.i(TAG, "Value of d is: " + d.toString());
         } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
-
+            b = new android.graphics.Point(start.x, start.y - DISPLACEMENT*3);
+            c = new android.graphics.Point(start.x-DISPLACEMENT*2, (b.y + DISPLACEMENT*4));
+            d = new android.graphics.Point(start.x+DISPLACEMENT*2, c.y);
         }
 
         Path path = new Path();
@@ -66,8 +63,7 @@ public class DecoratorUtil {
 
         drawCanvas.drawPath(path, mPaint);
     }
-
-
+    
     public static android.graphics.Point drawLineSegments(ClassDiagramObject cdoSrc,
                                                           ClassDiagramObject cdoDst,
                                                           GestureOrientation orientation,
@@ -77,81 +73,53 @@ public class DecoratorUtil {
         android.graphics.Point lineEnd = null;
         switch(orientation){
             case LEFT_TO_RIGHT:
-                // Going up
-                if(cdoSrc.getLocation().y > cdoDst.getLocation().y) {
-                    relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth(), cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                            cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoDst.getLocation().y+cdoDst.getSize().getHeight()/2,
-                            mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoDst.getLocation().y+cdoDst.getSize().getHeight()/2,
-                            cdoDst.getLocation().x-STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                            mPaint);
-                    lineEnd = new android.graphics.Point(cdoDst.getLocation().x-STROKE_WIDTH*4,
-                                                         cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2);
-                    // Going down
-                }else if(cdoSrc.getLocation().y <= cdoDst.getLocation().y){
-                    relCanvas.drawLine(cdoSrc.getLocation().x + cdoSrc.getSize().getWidth(), cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       cdoSrc.getLocation().x + cdoSrc.getSize().getWidth()+size.getWidth()/2,  cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x + cdoSrc.getSize().getWidth()+size.getWidth()/2,  cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       cdoSrc.getLocation().x + cdoSrc.getSize().getWidth()+size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x + cdoSrc.getSize().getWidth()+size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       cdoDst.getLocation().x-STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       mPaint);
-
-                    lineEnd = new android.graphics.Point(cdoDst.getLocation().x-STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2);
-                }
+                relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth(), cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
+                                   cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
+                                   cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoDst.getLocation().y+cdoDst.getSize().getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoSrc.getLocation().x + cdoSrc.getSize().getWidth() + size.getWidth()/2, cdoDst.getLocation().y+cdoDst.getSize().getHeight()/2,
+                                   cdoDst.getLocation().x-STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
+                                   mPaint);
+                lineEnd = new android.graphics.Point(cdoDst.getLocation().x-STROKE_WIDTH*4,
+                                                     cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2);
                 break;
             case RIGHT_TO_LEFT:
-                // Going up
-                if(cdoSrc.getLocation().y > cdoDst.getLocation().y) {
-                    relCanvas.drawLine(cdoSrc.getLocation().x, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       cdoSrc.getLocation().x - size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x - size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       cdoSrc.getLocation().x - size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x - size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       cdoDst.getLocation().x+cdoDst.getSize().getWidth()+STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       mPaint);
-                    lineEnd = new android.graphics.Point(cdoDst.getLocation().x+cdoDst.getSize().getWidth()+STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2);
-                    // Going down
-                }else if(cdoSrc.getLocation().y <= cdoDst.getLocation().y){
-                    relCanvas.drawLine(cdoSrc.getLocation().x, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       cdoSrc.getLocation().x - size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x - size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
-                                       cdoSrc.getLocation().x - size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x - size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                            cdoDst.getLocation().x+cdoDst.getSize().getWidth()+STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
-                                       mPaint);
-                    lineEnd = new android.graphics.Point(cdoDst.getLocation().x+cdoDst.getSize().getWidth()+STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2);
-                }
+                relCanvas.drawLine(cdoSrc.getLocation().x, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
+                                   cdoSrc.getLocation().x - size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoSrc.getLocation().x - size.getWidth()/2, cdoSrc.getLocation().y + cdoSrc.getSize().getHeight()/2,
+                                   cdoSrc.getLocation().x - size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoSrc.getLocation().x - size.getWidth()/2, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
+                                   cdoDst.getLocation().x+cdoDst.getSize().getWidth()+STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2,
+                                   mPaint);
+                lineEnd = new android.graphics.Point(cdoDst.getLocation().x+cdoDst.getSize().getWidth()+STROKE_WIDTH*4, cdoDst.getLocation().y + cdoDst.getSize().getHeight()/2);
                 break;
             case TOP_TO_BOTTOM:
-                // Going left
-                if(cdoSrc.getLocation().x > cdoDst.getLocation().x){
-                    relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight(),
-                                       cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
-                                       cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
-                                       mPaint);
-                    relCanvas.drawLine(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
-                                       cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y-STROKE_WIDTH*4,
-                                       mPaint);
-                    lineEnd = new android.graphics.Point(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y-STROKE_WIDTH*4);
-                    // Going right
-                } else if(cdoSrc.getLocation().x <= cdoSrc.getLocation().x){
-                    
-                }
+                relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight(),
+                                   cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
+                                   cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y+cdoSrc.getSize().getHeight() + size.getHeight()/2,
+                                   cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y-STROKE_WIDTH*4,
+                                   mPaint);
+                lineEnd = new android.graphics.Point(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y-STROKE_WIDTH*4);
                 break;
             case BOTTOM_TO_TOP:
-
+                relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y,
+                                   cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y - size.getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoSrc.getLocation().x+cdoSrc.getSize().getWidth()/2, cdoSrc.getLocation().y - size.getHeight()/2,
+                                   cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y - size.getHeight()/2,
+                                   mPaint);
+                relCanvas.drawLine(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoSrc.getLocation().y - size.getHeight()/2,
+                                   cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y+cdoDst.getSize().getHeight()+STROKE_WIDTH*4,
+                                   mPaint);
+                lineEnd = new android.graphics.Point(cdoDst.getLocation().x+cdoDst.getSize().getWidth()/2, cdoDst.getLocation().y+cdoDst.getSize().getHeight()+STROKE_WIDTH*4);
                 break;
             default:
                 break;
