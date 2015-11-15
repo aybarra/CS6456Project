@@ -190,6 +190,7 @@ public class DrawingView extends ViewGroup {
 
         umlObjects = new ArrayList<UMLObject>();
         notes = new ArrayList<>();
+        relationships = new ArrayList<>();
 
         scaleDetector = new ScaleGestureDetector(context, new ScaleListener());
 
@@ -217,10 +218,7 @@ public class DrawingView extends ViewGroup {
 
         canvas.save();
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
-
-        // New stuff
         canvas.drawBitmap(relBitmap, 0, 0, canvasPaint);
-
         canvas.drawPath(drawPath, drawPaint);
         canvas.restore();
     }
@@ -513,6 +511,7 @@ public class DrawingView extends ViewGroup {
         // Clear the references we're managing
         umlObjects.clear();
         notes.clear();
+        relationships.clear();
         selectedObjects.clear();
         backwardHistory.clear();
         forwardHistory.clear();
@@ -614,7 +613,7 @@ public class DrawingView extends ViewGroup {
     }
 
     private Relationship deleteRelationship(Relationship relationship) {
-        removeDrawing(relationship.paths);
+        removeDrawing(relationship.path);
         relationships.remove(relationship);
         relationship.src.removeRelationship(relationship);
         relationship.dst.removeRelationship(relationship);
@@ -622,11 +621,9 @@ public class DrawingView extends ViewGroup {
         return relationship;
     }
 
-    private void removeDrawing(List<Path> paths) {
+    private void removeDrawing(Path path) {
         drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        for (Path path : paths) {
-            drawCanvas.drawPath(path, drawPaint);
-        }
+        drawCanvas.drawPath(path, drawPaint);
         drawPaint.setXfermode(null);
     }
 
@@ -702,9 +699,7 @@ public class DrawingView extends ViewGroup {
     }
 
     private void addRelationship(Relationship relationship) {
-        for (Path path : relationship.paths) {
-            drawCanvas.drawPath(path, drawPaint);
-        }
+        drawCanvas.drawPath(relationship.path, drawPaint);
         relationship.src.addRelationship(relationship);
         relationship.dst.addRelationship(relationship);
         relationships.add(relationship);
@@ -791,8 +786,10 @@ public class DrawingView extends ViewGroup {
             Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
 
             Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation);
-
-            Relationship relationship = new Relationship(relationshipSize, null, null, objectSrc, objectDst);
+            drawPaint.setStrokeWidth(STROKE_WIDTH);
+            relCanvas.drawPath(fullPath, drawPaint);
+            drawPaint.setStrokeWidth(brushSize);
+            Relationship relationship = new Relationship(relationshipSize, null, fullPath, objectSrc, objectDst);
             objectSrc.addRelationship(relationship);
             objectDst.addRelationship(relationship);
             relationships.add(relationship);
