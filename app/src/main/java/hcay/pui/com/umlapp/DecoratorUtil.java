@@ -63,7 +63,7 @@ public class DecoratorUtil {
 
         drawCanvas.drawPath(path, mPaint);
     }
-    
+
     public static android.graphics.Point drawLineSegments(ClassDiagramObject cdoSrc,
                                                           ClassDiagramObject cdoDst,
                                                           GestureOrientation orientation,

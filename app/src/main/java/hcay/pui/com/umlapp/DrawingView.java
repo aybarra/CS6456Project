@@ -404,8 +404,6 @@ public class DrawingView extends ViewGroup {
             }
         }
 
-//        points.clear();
-
         if (selectedObjects.isEmpty()) clearPath();
         else MainActivity.updateDeleteItem(true);
     }
@@ -503,6 +501,7 @@ public class DrawingView extends ViewGroup {
         updateUndoRedoItems();
 
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        relCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
     }
 
@@ -714,31 +713,19 @@ public class DrawingView extends ViewGroup {
                 }
             }
 
-//            RelationshipView view = (RelationshipView) LayoutInflater.from(getContext()).inflate(R.layout.relationship_layout, DrawingView.this, false);
-//
-//            // Figure out the placement location
-//            android.graphics.Point location = OrientLocUtil.getPlacementLocation(orientation, objectSrc, objectDst);
-//            view.setX((float) location.x);
-//            view.setY((float) location.y);
-//            Log.d(TAG, "Relation was placed: " + location.toString());
-//            Toast.makeText(getContext(), "Placement of relationship is: " + location.toString(),
-//                           Toast.LENGTH_SHORT).show();
-
             // Determine the size to make the relationship
             Size relationshipSize = OrientLocUtil.getRelationshipSize(objectSrc, objectDst, orientation);
 //            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight());
-//            RelationshipObject relationship = new RelationshipObject(view, objectSrc, objectDst, orientation, result.gesture);
-//            addView(view, new LinearLayout.LayoutParams(relationshipSize.getWidth(), relationshipSize.getHeight()));
-//            view.init(DrawingView.this.getContext());
-//            umlObjects.add(relationship);
+
+            objectSrc.addRelationship(objectDst, result.gesture);
+            objectDst.addRelationship(objectSrc, result.gesture);
             android.graphics.Point p = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
             if(p != null) {
                 DecoratorUtil.addDecorator(p, result.gesture, orientation, relCanvas, drawPaint);
             } else {
                 Toast.makeText(this.getContext(), "Draw line segment branch not implemented", Toast.LENGTH_SHORT).show();
             }
-
         }
         Toast.makeText(DrawingView.this.getContext(),
                 "Results were size 1, gesture="+ result.gesture.toString(),

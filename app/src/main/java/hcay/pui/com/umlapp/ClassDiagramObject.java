@@ -5,6 +5,7 @@ import android.widget.LinearLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import hcay.pui.com.recognizer.Gesture;
 import hcay.pui.com.recognizer.Size;
 
 /**
@@ -14,26 +15,30 @@ public class ClassDiagramObject extends UMLObject {
 
     public NoteView noteView;
 
-    private List<Tuple> relationships;
-    private List<String> memberVars;
-    private List<String> methods;
+    private List<Tuple> relationshipList;
+//    private List<String> memberVars;
+//    private List<String> methods;
 
     public ClassDiagramObject(ClassDiagramView view){
         super(view);
 
         view.classDiagramObject = this;
 
-        relationships = new ArrayList<>();
-        memberVars = new ArrayList<>();
-        methods = new ArrayList<>();
+        relationshipList = new ArrayList<>();
+//        memberVars = new ArrayList<>();
+//        methods = new ArrayList<>();
     }
 
-    private class Tuple<UMLObject, Side> {
-        UMLObject object;
-        Side side;
-        public Tuple(UMLObject obj, Side side){
+    public void addRelationship(ClassDiagramObject dst, Gesture gesture){
+        relationshipList.add(new Tuple(dst,gesture));
+    }
+
+    private class Tuple<ClassDiagramObject, Gesture> {
+        ClassDiagramObject object;
+        Gesture gesture;
+        public Tuple(ClassDiagramObject obj, Gesture gesture){
             this.object = obj;
-            this.side = side;
+            this.gesture = gesture;
         }
     }
 }
