@@ -106,7 +106,7 @@ public class DrawingView extends ViewGroup {
 
     private boolean isViewMode = false;
 
-    private static final int MAX_CANVAS_WIDTH = 10000;
+    private static final int MAX_CANVAS_WIDTH = 7500;
     private static int MAX_CANVAS_HEIGHT;
     private GestureMode gestureMode = GestureMode.NONE;
     private ScaleGestureDetector scaleDetector;
