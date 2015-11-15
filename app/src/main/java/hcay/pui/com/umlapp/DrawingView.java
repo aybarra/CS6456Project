@@ -235,7 +235,7 @@ public class DrawingView extends ViewGroup {
             mScaleDetector.onTouchEvent(event);
             return true;
         } else {
-            switch(event.getAction()) {
+            switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Need to check if the timer is set, if so dismiss it
                     if (timer != null) {
