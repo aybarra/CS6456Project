@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -22,6 +23,7 @@ import android.view.MotionEvent;
 import android.graphics.PorterDuff;
 import android.util.TypedValue;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -95,18 +97,31 @@ public class DrawingView extends ViewGroup {
 
     private boolean isViewMode = false;
 
+    private static final int MAX_CANVAS_WIDTH = 10000;
+    private static int MAX_CANVAS_HEIGHT;
     private GestureMode gestureMode = GestureMode.NONE;
     private ScaleGestureDetector scaleDetector;
     private float scaleFactor = 1.f;
     private float prevX = 0;
     private float prevY = 0;
     private boolean dragged = false;
+    private int screenWidth, screenHeight;
+    private static final float MAX_SCALE_FACTOR = 2.f;
+    private static float MIN_SCALE_FACTOR = 0;
 
     private final int CLASSIFIER_MIN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics());
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
-//        setLayoutParams(new LinearLayout.LayoutParams(10000, 5000));
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        android.graphics.Point size = new android.graphics.Point();
+        display.getSize(size);
+        screenWidth = size.x;
+        screenHeight = size.y;
+        int rid = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int barHeight = rid > 0 ? getResources().getDimensionPixelSize(rid) : 0;
+        MAX_CANVAS_HEIGHT = MAX_CANVAS_WIDTH * (screenHeight - barHeight) / screenWidth;
         setupDrawing(context);
     }
 
@@ -121,7 +136,7 @@ public class DrawingView extends ViewGroup {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        setMeasuredDimension(10000, 5000);
+        setMeasuredDimension(MAX_CANVAS_WIDTH, MAX_CANVAS_HEIGHT);
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             measureChild(childView, widthMeasureSpec, heightMeasureSpec);
@@ -170,8 +185,11 @@ public class DrawingView extends ViewGroup {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         //view given size
         super.onSizeChanged(w, h, oldw, oldh);
+        MIN_SCALE_FACTOR = (float) screenWidth / w;
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
+        setX(-(w / 2.0f - screenWidth / 2.0f));
+        setY(-(h / 2.0f - screenHeight / 2.0f));
     }
 
     @Override
@@ -187,17 +205,20 @@ public class DrawingView extends ViewGroup {
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            scaleFactor *= detector.getScaleFactor();
-//            scaleFactor = Math.max(0.5f, Math.min(scaleFactor, 5f));
+            float detectorScaleFactor = detector.getScaleFactor();
+            if (detectorScaleFactor > 0.9 && detectorScaleFactor < 1.1)
+                return false;
+            scaleFactor *= detectorScaleFactor;
+            scaleFactor = Math.max(Math.min(scaleFactor, MAX_SCALE_FACTOR), MIN_SCALE_FACTOR);
             setScaleX(scaleFactor);
             setScaleY(scaleFactor);
+            gestureMode = GestureMode.ZOOM;
             return true;
         }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Original
         float touchX = event.getX();
         float touchY = event.getY();
 
@@ -211,11 +232,12 @@ public class DrawingView extends ViewGroup {
                 case MotionEvent.ACTION_MOVE:
                     clearPath();
 
-                    float dx = event.getX() - prevX;
-                    float dy = event.getY() - prevY;
-                    if (dx > 0 || dy > 0) dragged = true;
+                    float dx = (event.getX() - prevX) * scaleFactor;
+                    float dy = (event.getY() - prevY) * scaleFactor;
+                    if (dx != 0 || dy != 0) dragged = true;
 
                     if (dragged) {
+                        gestureMode = GestureMode.DRAG;
                         setX(getX() + dx);
                         setY(getY() + dy);
                     }
@@ -232,6 +254,7 @@ public class DrawingView extends ViewGroup {
                     gestureMode = GestureMode.DRAG;
                     break;
             }
+
             scaleDetector.onTouchEvent(event);
             if ((gestureMode == GestureMode.DRAG && scaleFactor != 1f && dragged) || gestureMode == GestureMode.ZOOM) {
                 invalidate();
