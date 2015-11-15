@@ -641,7 +641,9 @@ public class DrawingView extends ViewGroup {
 
     private void removeDrawing(Path path) {
         relPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        relPaint.setStrokeWidth(STROKE_WIDTH * 2);
         relCanvas.drawPath(path, relPaint);
+        relPaint.setStrokeWidth(STROKE_WIDTH);
         relPaint.setXfermode(null);
     }
 
