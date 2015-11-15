@@ -9,12 +9,8 @@ import android.view.View;
 import android.widget.ImageButton;
 
 import java.io.File;
-import java.util.UUID;
-import android.provider.MediaStore;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
-import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import hcay.pui.com.recognizer.TemplateManager;
@@ -37,9 +33,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mediumBrush = getResources().getInteger(R.integer.medium_size);
         largeBrush = getResources().getInteger(R.integer.large_size);
 
-        drawBtn = (ImageButton)findViewById(R.id.draw_btn);
-
-        drawBtn.setOnClickListener(this);
         drawView.setBrushSize(smallBrush);
         drawView.setColor("#FF000000");
 
@@ -48,14 +41,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //        fgPaintSel.setStyle(Style.STROKE);
 //        fgPaintSel.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
 
-        selectionBtn = (ImageButton)findViewById(R.id.selection_btn);
-        selectionBtn.setOnClickListener(this);
-
-        newBtn = (ImageButton)findViewById(R.id.new_btn);
-        newBtn.setOnClickListener(this);
-
-//        saveBtn = (ImageButton)findViewById(R.id.save_btn);
-//        saveBtn.setOnClickListener(this);
+        findViewById(R.id.gestureModeButton).setSelected(true);
 
         TemplateManager.initialize(getApplicationContext());
     }
@@ -146,15 +132,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        if(view.getId()==R.id.draw_btn){
-            drawView.setSelectionEnabled(false);
-
-        } else if(view.getId()==R.id.selection_btn){
-
-            drawView.setSelectionEnabled(true);
+        if (view.getId() == R.id.gestureModeButton) {
+            if (!view.isSelected()) {
+                view.setSelected(true);
+                findViewById(R.id.selectionModeButton).setSelected(false);
+                drawView.setSelectionEnabled(false);
+            }
+        } else if (view.getId() == R.id.selectionModeButton) {
+            if (!view.isSelected()) {
+                view.setSelected(true);
+                findViewById(R.id.gestureModeButton).setSelected(false);
+                drawView.setSelectionEnabled(true);
+            }
             Toast.makeText(getApplicationContext(), "Selection mode enabled", Toast.LENGTH_SHORT).show();
-
-        } else if(view.getId()==R.id.new_btn){
+        } else if (view.getId() == R.id.clear_button) {
             //new button
             AlertDialog.Builder newDialog = new AlertDialog.Builder(this);
             newDialog.setTitle("New drawing");

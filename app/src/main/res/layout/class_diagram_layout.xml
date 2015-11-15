@@ -25,9 +25,9 @@
                 android:layout_height="48dip"
                 android:layout_marginLeft="8dp"
                 android:padding="13dp"
-                android:src="@drawable/bi_navigable"
+                android:src="@drawable/ic_open_with_black"
                 android:layout_alignParentLeft="true"
-                app:cb_color="#6ed9f3"
+                app:cb_color="@android:color/darker_gray"
                 app:cb_pressedRingWidth="8dip"
                 android:id="@+id/dragButton" />
 
@@ -35,11 +35,24 @@
                 android:layout_width="48dip"
                 android:layout_height="48dip"
                 android:padding="12dp"
-                android:src="@drawable/arrow"
                 android:layout_toRightOf="@id/dragButton"
-                app:cb_color="#6ed9f3"
+                app:cb_color="@android:color/darker_gray"
                 app:cb_pressedRingWidth="8dip"
                 android:id="@+id/typeButton" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/typeButton"
+                android:layout_alignTop="@id/typeButton"
+                android:layout_alignRight="@id/typeButton"
+                android:layout_alignBottom="@id/typeButton"
+                android:gravity="center"
+                android:text="C"
+                android:textSize="20sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold"
+                android:id="@+id/typeLabel" />
 
         </RelativeLayout>
 
@@ -49,7 +62,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginBottom="8dp"
-            android:id="@+id/editText"
+            android:id="@+id/titleLabel"
             android:hint="&lt;Class Name>"
             android:inputType="textMultiLine"
             android:textStyle="bold"
