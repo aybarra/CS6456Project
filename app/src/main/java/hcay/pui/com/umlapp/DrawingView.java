@@ -7,7 +7,9 @@ import android.graphics.DashPathEffect;
 import android.graphics.Matrix;
 import android.graphics.PathEffect;
 
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -84,6 +86,7 @@ public class DrawingView extends ViewGroup {
 
     private List<UMLObject> umlObjects;
     private List<NoteView> notes;
+    private List<Relationship> relationships;
     private List<Object> selectedObjects = new ArrayList<>();
 
     private boolean moving = false;
@@ -136,7 +139,7 @@ public class DrawingView extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        for(int i = 0; i < this.getChildCount(); i++){
+        for (int i = 0; i < this.getChildCount(); i++) {
             getChildAt(i).layout(l, t, r, b);
         }
     }
@@ -569,13 +572,20 @@ public class DrawingView extends ViewGroup {
         if (umlObj != null) {
             deleteUMLObject(umlObj);
             backwardHistory.add(Action.create(Action.ActionType.REMOVED, umlObj));
-        } else {
-            NoteView noteView = getContainingNoteView(points);
-            if (noteView != null) {
-                deleteNote(noteView);
-                backwardHistory.add(Action.create(Action.ActionType.REMOVED, noteView));
-            }
         }
+
+        NoteView noteView = getContainingNoteView(points);
+        if (noteView != null && noteView.getParent() != null) {
+            deleteNote(noteView);
+            backwardHistory.add(Action.create(Action.ActionType.REMOVED, noteView));
+        }
+
+        Relationship relationship = getContainingRelationship(points);
+        if (relationship != null) {
+            deleteRelationship(relationship);
+            backwardHistory.add(Action.create(Action.ActionType.REMOVED, relationship));
+        }
+
         forwardHistory.clear();
         updateUndoRedoItems();
     }
@@ -598,6 +608,23 @@ public class DrawingView extends ViewGroup {
         notes.remove(noteView);
         invalidate();
         return noteView;
+    }
+
+    private Relationship deleteRelationship(Relationship relationship) {
+        removeDrawing(relationship.paths);
+        relationships.remove(relationship);
+        relationship.src.removeRelationship(relationship);
+        relationship.dst.removeRelationship(relationship);
+        invalidate();
+        return relationship;
+    }
+
+    private void removeDrawing(List<Path> paths) {
+        drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        for (Path path : paths) {
+            drawCanvas.drawPath(path, drawPaint);
+        }
+        drawPaint.setXfermode(null);
     }
 
     private void performNoteAction(Point firstPoint) {
@@ -648,9 +675,36 @@ public class DrawingView extends ViewGroup {
         return null;
     }
 
+    private Relationship getContainingRelationship(List<Point> points) {
+        for (Relationship relationship : relationships) {
+            int count = 0;
+            for (Point p : points) {
+                if (isPointInsideRect(p, relationship.rect)) {
+                    count++;
+                }
+            }
+            if ((double) count / points.size() >= 0.05) return relationship;
+        }
+        return null;
+    }
+
     private boolean isPointInsideView(Point p, View v) {
         return p.x >= v.getX() && p.x <= (v.getX() + v.getMeasuredWidth())
                 && p.y >= v.getY() && p.y <= (v.getY() + v.getMeasuredHeight());
+    }
+
+    private boolean isPointInsideRect(Point p, RectF rectF) {
+        return p.x >= rectF.left && p.x <= (rectF.left + rectF.width())
+                && p.y >= rectF.top && p.y <= (rectF.top + rectF.height());
+    }
+
+    private void addRelationship(Relationship relationship) {
+        for (Path path : relationship.paths) {
+            drawCanvas.drawPath(path, drawPaint);
+        }
+        relationship.src.addRelationship(relationship);
+        relationship.dst.addRelationship(relationship);
+        relationships.add(relationship);
     }
 
     private void performGestureAction(RecognizerResult result, final Point[] bounds){
@@ -730,11 +784,16 @@ public class DrawingView extends ViewGroup {
 //            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight());
 
-            objectSrc.addRelationship(objectDst, result.gesture);
-            objectDst.addRelationship(objectSrc, result.gesture);
             android.graphics.Point p = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
-            if(p != null) {
+            if (p != null) {
                 DecoratorUtil.addDecorator(p, result.gesture, orientation, relCanvas, drawPaint);
+                Relationship relationship = new Relationship(relationshipSize, null, null, objectSrc, objectDst);
+                objectSrc.addRelationship(relationship);
+                objectDst.addRelationship(relationship);
+                relationships.add(relationship);
+                backwardHistory.add(Action.create(Action.ActionType.ADDED, relationship));
+                forwardHistory.clear();
+                updateUndoRedoItems();
             } else {
                 Toast.makeText(this.getContext(), "Draw line segment branch not implemented", Toast.LENGTH_SHORT).show();
             }
@@ -935,6 +994,7 @@ public class DrawingView extends ViewGroup {
     private Action processAction(Action action) {
         switch (action.type) {
             case ADDED:
+                if (action.relationship != null) deleteRelationship(action.relationship);
                 if (action.isUMLObject) deleteUMLObject(action.umlObject);
                 if (action.noteView != null) deleteNote(action.noteView);
                 action.type = Action.ActionType.REMOVED;
@@ -948,6 +1008,9 @@ public class DrawingView extends ViewGroup {
                     notes.add(action.noteView);
                     addView(action.noteView);
                 }
+                if (action.relationship != null) {
+                    addRelationship(action.relationship);
+                }
                 invalidate();
                 action.type = Action.ActionType.ADDED;
                 break;
@@ -960,4 +1023,5 @@ public class DrawingView extends ViewGroup {
     private enum GestureMode {
         NONE, DRAG, ZOOM
     }
+
 }
