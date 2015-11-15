@@ -2,6 +2,7 @@ package hcay.pui.com.umlapp;
 
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.util.Log;
 
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.Size;
@@ -22,6 +23,6 @@ public class Relationship {
         this.path = path;
         this.src = src;
         this.dst = dst;
-//        this.rect = new RectF((float) point.x, (float) point.y, (float) point.x + size.getWidth(), (float) point.y + size.getHeight());
+        this.rect = new RectF((float) point.x, (float) point.y, (float) point.x + size.getWidth(), (float) point.y + size.getHeight());
     }
 }

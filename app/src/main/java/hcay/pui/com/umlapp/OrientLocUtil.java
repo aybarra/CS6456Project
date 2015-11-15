@@ -150,51 +150,51 @@ public class OrientLocUtil {
         return size;
     }
 
-    public static android.graphics.Point getGestureOriginPoint(UMLObject src, UMLObject dst, GestureOrientation orientation){
-        android.graphics.Point originPoint = new android.graphics.Point();
+    public static Point getGestureOriginPoint(UMLObject src, UMLObject dst, GestureOrientation orientation){
+        Point originPoint = null;
 
         switch (orientation) {
             case LEFT_TO_RIGHT:
                 // Going down
                 if(src.getLocation().y <= dst.getLocation().y){
-                    originPoint = new android.graphics.Point(src.getLocation().x + src.getSize().getWidth(),
+                    originPoint = new Point(src.getLocation().x + src.getSize().getWidth(),
                                                              src.getLocation().y + src.getSize().getHeight() / 2);
                 // Going up
                 } else if(src.getLocation().y > dst.getLocation().y){
-                    originPoint = new android.graphics.Point(src.getLocation().x + src.getSize().getWidth(),
+                    originPoint = new Point(src.getLocation().x + src.getSize().getWidth(),
                                                              dst.getLocation().y + dst.getSize().getHeight() / 2);
                 }
                 break;
             case RIGHT_TO_LEFT:
                 // Going down
                 if(src.getLocation().y < dst.getLocation().y){
-                    originPoint = new android.graphics.Point(dst.getLocation().x + dst.getSize().getWidth(),
+                    originPoint = new Point(dst.getLocation().x + dst.getSize().getWidth(),
                                                              src.getLocation().y + src.getSize().getHeight()/2);
                 // Going up
                 } else if(src.getLocation().y >= dst.getLocation().y){
-                    originPoint = new android.graphics.Point(dst.getLocation().x + dst.getSize().getWidth(),
+                    originPoint = new Point(dst.getLocation().x + dst.getSize().getWidth(),
                                                              dst.getLocation().y + dst.getSize().getHeight()/2);
                 }
                 break;
             case TOP_TO_BOTTOM:
                 // Going right
                 if(src.getLocation().x <= dst.getLocation().x){
-                    originPoint = new android.graphics.Point(src.getLocation().x + src.getSize().getWidth()/2,
+                    originPoint = new Point(src.getLocation().x + src.getSize().getWidth()/2,
                                                              src.getLocation().y + src.getSize().getHeight());
                 // Going left
                 } else if(src.getLocation().x > dst.getLocation().x){
-                    originPoint = new android.graphics.Point(dst.getLocation().x + dst.getSize().getWidth()/2,
+                    originPoint = new Point(dst.getLocation().x + dst.getSize().getWidth()/2,
                                                              src.getLocation().y + src.getSize().getHeight());
                 }
                 break;
             case BOTTOM_TO_TOP:
                 // Going right
                 if(src.getLocation().x < dst.getLocation().x){
-                    originPoint = new android.graphics.Point(src.getLocation().x + src.getSize().getWidth()/2,
+                    originPoint = new Point(src.getLocation().x + src.getSize().getWidth()/2,
                                                              dst.getLocation().y + dst.getSize().getHeight());
                     // Going left
                 } else if(src.getLocation().x >= dst.getLocation().x){
-                    originPoint = new android.graphics.Point(dst.getLocation().x + dst.getSize().getWidth()/2,
+                    originPoint = new Point(dst.getLocation().x + dst.getSize().getWidth()/2,
                                                              dst.getLocation().y + dst.getSize().getHeight());
                 }
                 break;

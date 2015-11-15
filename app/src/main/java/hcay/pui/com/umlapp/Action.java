@@ -28,7 +28,7 @@ public class Action {
     public Action(ActionType type, Relationship relationship) {
         this.type = type;
         this.relationship = relationship;
-        this.isUMLObject = true;
+        this.isUMLObject = false;
     }
 
     public static ArrayList<Action> create(ActionType type, NoteView noteView) {

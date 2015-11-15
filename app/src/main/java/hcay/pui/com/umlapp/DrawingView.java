@@ -56,7 +56,7 @@ public class DrawingView extends ViewGroup {
     // drawing path
     private Path drawPath;
     // drawing and canvas paint
-    private Paint drawPaint, canvasPaint;
+    private Paint drawPaint, canvasPaint, relPaint;
     // initial color
     private int paintColor = 0xFF660000;
     // canvas
@@ -172,14 +172,21 @@ public class DrawingView extends ViewGroup {
         //get drawing area setup for interaction
         drawPath = new Path();
         drawPaint = new Paint();
+        relPaint = new Paint();
 
         drawPaint.setColor(paintColor);
+        relPaint.setColor(paintColor);
 
         drawPaint.setAntiAlias(true);
         drawPaint.setStrokeWidth(brushSize);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
+        relPaint.setAntiAlias(true);
+        relPaint.setStrokeWidth(STROKE_WIDTH);
+        relPaint.setStyle(Paint.Style.STROKE);
+        relPaint.setStrokeJoin(Paint.Join.ROUND);
+        relPaint.setStrokeCap(Paint.Cap.ROUND);
         canvasPaint = new Paint(Paint.DITHER_FLAG);
 
         brushSize = getResources().getInteger(R.integer.medium_size);
@@ -420,6 +427,12 @@ public class DrawingView extends ViewGroup {
             }
         }
 
+        for (Relationship relationship : relationships) {
+            if (selectedRegion.contains(relationship.rect)) {
+                selectedObjects.add(relationship);
+            }
+        }
+
         if (selectedObjects.isEmpty()) clearPath();
         else MainActivity.updateDeleteItem(true);
     }
@@ -437,6 +450,10 @@ public class DrawingView extends ViewGroup {
                     deleteNote(noteView);
                     actions.add(new Action(Action.ActionType.REMOVED, noteView));
                 }
+            } else if (selectedObject instanceof Relationship) {
+                Relationship relationship = (Relationship) selectedObject;
+                deleteRelationship(relationship);
+                actions.add(new Action(Action.ActionType.REMOVED, relationship));
             }
         }
         backwardHistory.add(actions);
@@ -464,6 +481,7 @@ public class DrawingView extends ViewGroup {
 
         paintColor = Color.parseColor(newColor);
         drawPaint.setColor(paintColor);
+        relPaint.setColor(paintColor);
     }
 
     public void setBrushSize(float newSize){
@@ -622,9 +640,9 @@ public class DrawingView extends ViewGroup {
     }
 
     private void removeDrawing(Path path) {
-        drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        drawCanvas.drawPath(path, drawPaint);
-        drawPaint.setXfermode(null);
+        relPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        relCanvas.drawPath(path, relPaint);
+        relPaint.setXfermode(null);
     }
 
     private void performNoteAction(Point firstPoint) {
@@ -699,7 +717,7 @@ public class DrawingView extends ViewGroup {
     }
 
     private void addRelationship(Relationship relationship) {
-        drawCanvas.drawPath(relationship.path, drawPaint);
+        drawCanvas.drawPath(relationship.path, relPaint);
         relationship.src.addRelationship(relationship);
         relationship.dst.addRelationship(relationship);
         relationships.add(relationship);
@@ -782,14 +800,13 @@ public class DrawingView extends ViewGroup {
 //            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight());
 
-            SegmentTuple tuple = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, drawPaint, relCanvas);
+            SegmentTuple tuple = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, relPaint, relCanvas);
             Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
 
             Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation);
-            drawPaint.setStrokeWidth(STROKE_WIDTH);
-            relCanvas.drawPath(fullPath, drawPaint);
-            drawPaint.setStrokeWidth(brushSize);
-            Relationship relationship = new Relationship(relationshipSize, null, fullPath, objectSrc, objectDst);
+            relCanvas.drawPath(fullPath, relPaint);
+            Point origin = OrientLocUtil.getGestureOriginPoint(objectSrc, objectDst, orientation);
+            Relationship relationship = new Relationship(relationshipSize, origin, fullPath, objectSrc, objectDst);
             objectSrc.addRelationship(relationship);
             objectDst.addRelationship(relationship);
             relationships.add(relationship);
@@ -848,8 +865,8 @@ public class DrawingView extends ViewGroup {
         //initialize the TimerTask's job
         initializeTimerTask();
 
-        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
-        timer.schedule(timerTask, 2000); //
+        //schedule the timer, after the first 5000ms the TimerTask will run every 500ms
+        timer.schedule(timerTask, 500);
     }
 
     public void stopTimer() {
