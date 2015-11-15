@@ -91,17 +91,6 @@ public class DrawingView extends ViewGroup {
     private Ellipse selectedRegion;
     private Point originalPoint;
 
-    protected float mPosX;
-    protected float mPosY;
-    protected float mPosX0 = 0;     // initial displacement values
-    protected float mPosY0 = 0;
-    protected float mFocusX;
-    protected float mFocusY;
-    protected float mLastTouchX;
-    protected float mLastTouchY;
-    protected static final int INVALID_POINTER_ID = -1;
-    protected int mActivePointerId = INVALID_POINTER_ID;
-
     private ArrayList<ArrayList<Action>> backwardHistory = new ArrayList<>();
     private ArrayList<ArrayList<Action>> forwardHistory = new ArrayList<>();
 
@@ -191,9 +180,9 @@ public class DrawingView extends ViewGroup {
         lastBrushSize = brushSize;
 
         recognizer = new Recognizer();
-        points = new ArrayList<Point>();
+        points = new ArrayList<>();
 
-        umlObjects = new ArrayList<UMLObject>();
+        umlObjects = new ArrayList<>();
         notes = new ArrayList<>();
         relationships = new ArrayList<>();
 
@@ -391,9 +380,6 @@ public class DrawingView extends ViewGroup {
                     classDiagramObject.noteView.setX(newX);
                     classDiagramObject.noteView.setY(newY);
                 }
-            } else if (selectedObject instanceof NoteView) {
-                NoteView noteView = (NoteView) selectedObject;
-                // TODO: moving noteViews separately?
             }
         }
     }
@@ -484,14 +470,8 @@ public class DrawingView extends ViewGroup {
 
     public void setBrushSize(float newSize){
         // update size
-        float pixelAmount = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                newSize, getResources().getDisplayMetrics());
-        brushSize=pixelAmount;
+        brushSize= TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newSize, getResources().getDisplayMetrics());
         drawPaint.setStrokeWidth(brushSize);
-    }
-
-    public void setLastBrushSize(float lastSize){
-        lastBrushSize=lastSize;
     }
 
     public float getLastBrushSize(){
@@ -551,9 +531,6 @@ public class DrawingView extends ViewGroup {
                         Point bottomMost = getBottomMost();
                         Point[] bounds = {leftMost, rightMost, topMost, bottomMost};
 
-                        Log.i(TAG, "left: "+ leftMost.toString() + ", right: " + rightMost.toString()
-                                 + ", top: " + topMost.toString() + ", bottom: "+ bottomMost.toString());
-
                         // Using this for giving the recognizer updates
                         ArrayList<Point>tempPoints = new ArrayList<>();
                         tempPoints.addAll(points);
@@ -564,7 +541,19 @@ public class DrawingView extends ViewGroup {
 
                         if (results.size() > 1) {
                             // Launch the dialog if there are options that are too close
-                            generateRecognizerOptionsDialog(results, tempPoints, bounds);
+                            RecognizerResult result = results.get(0);
+                            if (result.gesture == Gesture.DELETE) {
+                                performDeleteAction(tempPoints);
+                            } else if (result.gesture == Gesture.PIGTAIL) {
+                                performNoteAction(tempPoints.get(0));
+                            } else {
+                                for (int i = 0; i < results.size(); i++) {
+                                    if (!results.get(i).gesture.isShape) {
+                                        results.remove(i);
+                                    }
+                                }
+                                generateRecognizerOptionsDialog(results, tempPoints, bounds);
+                            }
                         } else if (results.size() == 1) {
                             RecognizerResult result = results.get(0);
                             if (result.gesture == Gesture.DELETE) {
@@ -575,9 +564,7 @@ public class DrawingView extends ViewGroup {
                                 performGestureAction(result, bounds);
                             }
                         } else {
-                            Toast.makeText(DrawingView.this.getContext(),
-                                    "No result",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Could not recognize the gesture", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -655,7 +642,7 @@ public class DrawingView extends ViewGroup {
     private void performNoteAction(Point firstPoint) {
         UMLObject umlObj = getContainingUMLObject(firstPoint);
         if (umlObj != null && umlObj instanceof ClassDiagramObject) {
-            NoteView view = (NoteView) LayoutInflater.from(getContext()).inflate(R.layout.note_layout, DrawingView.this, false);
+            NoteView view = (NoteView) LayoutInflater.from(getContext()).inflate(R.layout.note_layout, this, false);
             view.setX(umlObj.view.getX() + umlObj.view.getMeasuredWidth() + 20);
             view.setY(umlObj.view.getY() - 50);
             notes.add(view);
@@ -738,8 +725,8 @@ public class DrawingView extends ViewGroup {
         Size tempSize = result.size;
 
         if(result.gesture == Gesture.CLASSIFIER) {
-            ClassDiagramView view = (ClassDiagramView) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, DrawingView.this, false);
-            view.init(DrawingView.this.getContext());
+            ClassDiagramView view = (ClassDiagramView) LayoutInflater.from(getContext()).inflate(R.layout.class_diagram_layout, this, false);
+            view.init(getContext());
             view.setX((float) leftMost.x);
             view.setY((float) topMost.y);
             UMLObject classDiagramObject = new ClassDiagramObject(view);
@@ -757,7 +744,7 @@ public class DrawingView extends ViewGroup {
             GestureOrientation orientation = OrientLocUtil.getGestureOrientation(bounds);
             Log.i(TAG, "Gesture orientation is: " + orientation.toString());
 
-            // Figure out the two closest classfiers by index
+            // Figure out the two closest classifiers by index
             ClassDiagramObject objectSrc;
             ClassDiagramObject objectDst;
             if(orientation == GestureOrientation.LEFT_TO_RIGHT || orientation == GestureOrientation.RIGHT_TO_LEFT) {
@@ -784,12 +771,12 @@ public class DrawingView extends ViewGroup {
             } else {
                 int top = findClosestTo(topMost, null);
                 if(top == -1){
-                    Toast.makeText(getContext(), "Need two class diagrams to make a relationship", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Need two classifiers to make a relationship", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 int bottom = findClosestTo(bottomMost, umlObjects.get(top));
                 if(bottom == -1){
-                    Toast.makeText(getContext(), "Need two class diagrams to make a relationship", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Need two classifiers to make a relationship", Toast.LENGTH_SHORT).show();
                 }
 
                 // Perform set based on orientation
@@ -804,7 +791,6 @@ public class DrawingView extends ViewGroup {
 
             // Determine the size to make the relationship
             Size relationshipSize = OrientLocUtil.getRelationshipSize(objectSrc, objectDst, orientation);
-//            Toast.makeText(getContext(), "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Size of relationship is: " + relationshipSize.getWidth() + ", " + relationshipSize.getHeight());
 
             SegmentTuple tuple = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, relPaint, relCanvas);
@@ -821,9 +807,9 @@ public class DrawingView extends ViewGroup {
             forwardHistory.clear();
             updateUndoRedoItems();
         }
-        Toast.makeText(DrawingView.this.getContext(),
-                "Results were size 1, gesture="+ result.gesture.toString(),
-                Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getContext(),
+//                "Results were size 1, gesture="+ result.gesture.toString(),
+//                Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -893,10 +879,10 @@ public class DrawingView extends ViewGroup {
         gestureDialog.setTitle("Clarify your gesture:");
 
         // Gives the layout inflater
-        LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService( Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         // Gives me the layout
-        View view = inflater.inflate(R.layout.gesture_chooser, null);
+        View view = inflater.inflate(R.layout.gesture_chooser, this, false);
         LinearLayout ll = (LinearLayout) view.findViewById(R.id.gesture_picker_layout);
 
         int pos = 0;
