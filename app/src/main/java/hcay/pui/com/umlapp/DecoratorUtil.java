@@ -35,14 +35,12 @@ public class DecoratorUtil {
     /**
      *
      * @param tuple
-     * @param drawCanvas
      * @param orientation
-     * @param mPaint
      */
-    public static Path drawArrow(SegmentTuple tuple, Canvas drawCanvas, GestureOrientation orientation, Paint mPaint){
+    public static Path drawArrow(SegmentTuple tuple, GestureOrientation orientation){
         android.graphics.Point start = tuple.lastPoint;
-        float old = mPaint.getStrokeWidth();
-        mPaint.setStrokeWidth(STROKE_WIDTH);
+//        float old = mPaint.getStrokeWidth();
+//        mPaint.setStrokeWidth(STROKE_WIDTH);
         android.graphics.Point a = start;
         android.graphics.Point b = null;
         android.graphics.Point c = null;
@@ -79,16 +77,16 @@ public class DecoratorUtil {
         tuple.segPath.lineTo(d.x, d.y);
 //        tuple.segPath.close();
 //        drawCanvas.drawPath(path, mPaint);
-        mPaint.setStrokeWidth(old);
+//        mPaint.setStrokeWidth(old);
 
         return tuple.segPath;
     }
-    
-    public static Path drawDiamond(SegmentTuple tuple, Canvas drawCanvas, GestureOrientation orientation, Paint mPaint, boolean filled){
+
+    public static Path drawDiamond(SegmentTuple tuple, GestureOrientation orientation){
         android.graphics.Point start = tuple.lastPoint;
-        float old = mPaint.getStrokeWidth();
-        Paint.Style oldStyle = mPaint.getStyle();;
-        mPaint.setStrokeWidth(STROKE_WIDTH);
+//        float old = mPaint.getStrokeWidth();
+//        Paint.Style oldStyle = mPaint.getStyle();;
+//        mPaint.setStrokeWidth(STROKE_WIDTH);
         android.graphics.Point a = start;
         android.graphics.Point b = null;
         android.graphics.Point c = null;
@@ -112,9 +110,9 @@ public class DecoratorUtil {
         }
 
 //        Path path = new Path();
-        if(filled){
-            mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        }
+//        if(filled){
+//            mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+//        }
 //        path.setFillType(Path.FillType.WINDING);
         tuple.segPath.setFillType(Path.FillType.EVEN_ODD);
         tuple.segPath.moveTo(a.x, a.y);
@@ -127,18 +125,18 @@ public class DecoratorUtil {
         tuple.segPath.lineTo(a.x, a.y);
 
 //        drawCanvas.drawPath(path, mPaint);
-        mPaint.setStrokeWidth(old);
-        if(filled){
-            mPaint.setStyle(oldStyle);
-        }
+//        mPaint.setStrokeWidth(old);
+//        if(filled){
+//            mPaint.setStyle(oldStyle);
+//        }
 
         return tuple.segPath;
     }
 
-    public static Path drawTriangle(SegmentTuple tuple, Canvas drawCanvas, GestureOrientation orientation, Paint mPaint){
+    public static Path drawTriangle(SegmentTuple tuple, GestureOrientation orientation){
 
-        float old = mPaint.getStrokeWidth();
-        mPaint.setStrokeWidth(STROKE_WIDTH);
+//        float old = mPaint.getStrokeWidth();
+//        mPaint.setStrokeWidth(STROKE_WIDTH);
         android.graphics.Point start = tuple.lastPoint;
         android.graphics.Point a = start;
         android.graphics.Point b = null;
@@ -182,14 +180,14 @@ public class DecoratorUtil {
 //        tuple.segPath.close();
 
 //        drawCanvas.drawPath(path, mPaint);
-        mPaint.setStrokeWidth(old);
+//        mPaint.setStrokeWidth(old);
 
         return tuple.segPath;
     }
 
-    public static Path drawCircle(SegmentTuple tuple, Canvas drawCanvas, GestureOrientation orientation, Paint mPaint) {
-        float old = mPaint.getStrokeWidth();
-        mPaint.setStrokeWidth(STROKE_WIDTH);
+    public static Path drawCircle(SegmentTuple tuple, GestureOrientation orientation) {
+//        float old = mPaint.getStrokeWidth();
+//        mPaint.setStrokeWidth(STROKE_WIDTH);
         android.graphics.Point start = tuple.lastPoint;
         switch(orientation){
             case LEFT_TO_RIGHT:
@@ -209,7 +207,7 @@ public class DecoratorUtil {
 //                drawCanvas.drawCircle(start.x, start.y-PADDING/2, PADDING/2, mPaint);
                 break;
         }
-        mPaint.setStrokeWidth(old);
+//        mPaint.setStrokeWidth(old);
 
         return tuple.segPath;
     }
@@ -325,31 +323,29 @@ public class DecoratorUtil {
      * @param tuple
      * @param gesture
      * @param orientation
-     * @param canvas
-     * @param paint
      */
     public static Path addDecorator(SegmentTuple tuple, Gesture gesture,
-                             GestureOrientation orientation, Canvas canvas, Paint paint){
+                             GestureOrientation orientation){
         Path fullPath = null;
         switch(gesture){
             case NAVIGABLE:
-                fullPath = DecoratorUtil.drawDiamond(tuple, canvas, orientation, paint, true);
+                fullPath = DecoratorUtil.drawDiamond(tuple, orientation);
                 //DecoratorUtil.drawArrow(start, canvas, orientation, paint);
                 break;
             case AGGREGATION:
                 // Looks like a diamond
-                fullPath = DecoratorUtil.drawDiamond(tuple, canvas, orientation, paint, false);
+                fullPath = DecoratorUtil.drawDiamond(tuple, orientation);
                 break;
             case GENERALIZATION:
                 // Draw a  triangle
-                fullPath = DecoratorUtil.drawTriangle(tuple, canvas, orientation, paint);
+                fullPath = DecoratorUtil.drawTriangle(tuple, orientation);
                 break;
             case REALIZATION:
                 // Looks like a lollipop
-                fullPath = DecoratorUtil.drawCircle(tuple, canvas, orientation, paint);
+                fullPath = DecoratorUtil.drawCircle(tuple, orientation);
                 break;
             case COMPOSITION:
-                fullPath = DecoratorUtil.drawDiamond(tuple, canvas, orientation, paint, true);
+                fullPath = DecoratorUtil.drawDiamond(tuple, orientation);
                 break;
             case DEPENDENCY:
                 break;
