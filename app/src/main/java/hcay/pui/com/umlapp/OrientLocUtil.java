@@ -2,6 +2,13 @@ package hcay.pui.com.umlapp;
 
 import android.util.Log;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import hcay.pui.com.recognizer.Gesture;
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.Size;
 
@@ -141,5 +148,28 @@ public class OrientLocUtil {
                 break;
         }
         return size;
+    }
+
+    public static android.graphics.Point getGestureOriginPoint(UMLObject src, UMLObject dst, GestureOrientation orientation){
+        android.graphics.Point originPoint = new android.graphics.Point();
+        switch (orientation){
+            case LEFT_TO_RIGHT:
+                originPoint = new android.graphics.Point(src.getLocation().x + src.getSize().getWidth(),
+                                                         src.getLocation().y + src.getSize().getHeight()/2);
+                break;
+            case RIGHT_TO_LEFT:
+                originPoint = new android.graphics.Point(dst.getLocation().x + dst.getSize().getWidth(),
+                                                         dst.getLocation().y + dst.getSize().getHeight()/2);
+                break;
+            case TOP_TO_BOTTOM:
+                originPoint = new android.graphics.Point(src.getLocation().x + src.getSize().getWidth()/2,
+                                                         src.getLocation().y + src.getSize().getHeight());
+                break;
+            case BOTTOM_TO_TOP:
+                originPoint = new android.graphics.Point(dst.getLocation().x + dst.getSize().getWidth()/2,
+                                                         dst.getLocation().y + dst.getSize().getHeight());
+                break;
+        }
+        return originPoint;
     }
 }
