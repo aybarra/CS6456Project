@@ -28,6 +28,7 @@ public class ClassDiagramView extends LinearLayout {
     private CircleButton dragButton, typeButton;
     private EditText nameEditText;
     private View separator;
+    private TextView typeLabel;
 
     private final String TAG = "CLASS_DIAGRAM_VIEW";
     private float prevX, prevY;
@@ -102,7 +103,7 @@ public class ClassDiagramView extends LinearLayout {
             }
         });
 
-        final TextView typeLabel = (TextView) findViewById(R.id.typeLabel);
+        typeLabel = (TextView) findViewById(R.id.typeLabel);
         typeButton = (CircleButton) findViewById(R.id.typeButton);
         typeButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -117,11 +118,6 @@ public class ClassDiagramView extends LinearLayout {
             }
         });
     }
-
-//    @Override
-//    public boolean onTouchEvent(MotionEvent ev) {
-//        return ev.getX() <= getMeasuredWidth() && ev.getY() <= getMeasuredHeight();
-//    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -143,6 +139,7 @@ public class ClassDiagramView extends LinearLayout {
         addMethod.setVisibility(toViewMode ? GONE : VISIBLE);
         dragButton.setVisibility(toViewMode ? GONE : VISIBLE);
         typeButton.setVisibility(toViewMode ? GONE : VISIBLE);
+        typeLabel.setVisibility(toViewMode ? GONE : VISIBLE);
         nameEditText.clearFocus();
         nameEditText.setClickable(!toViewMode);
         nameEditText.setFocusableInTouchMode(!toViewMode);
