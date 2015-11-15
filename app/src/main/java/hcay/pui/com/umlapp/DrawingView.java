@@ -218,10 +218,7 @@ public class DrawingView extends ViewGroup {
 
         canvas.save();
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
-
-        // New stuff
         canvas.drawBitmap(relBitmap, 0, 0, canvasPaint);
-
         canvas.drawPath(drawPath, drawPaint);
         canvas.restore();
     }
@@ -789,7 +786,9 @@ public class DrawingView extends ViewGroup {
             Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
 
             Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation);
+            drawPaint.setStrokeWidth(STROKE_WIDTH);
             relCanvas.drawPath(fullPath, drawPaint);
+            drawPaint.setStrokeWidth(brushSize);
             Relationship relationship = new Relationship(relationshipSize, null, fullPath, objectSrc, objectDst);
             objectSrc.addRelationship(relationship);
             objectDst.addRelationship(relationship);
