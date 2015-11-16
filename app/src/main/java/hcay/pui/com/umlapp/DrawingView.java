@@ -4,11 +4,9 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
-import android.graphics.Matrix;
 import android.graphics.PathEffect;
 
 import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Handler;
@@ -615,9 +613,16 @@ public class DrawingView extends ViewGroup {
     private UMLObject deleteUMLObject(UMLObject umlObject) {
         removeView(umlObject.view);
         if (umlObject instanceof ClassDiagramObject) {
-            NoteView noteView = ((ClassDiagramObject) umlObject).noteView;
+            ClassDiagramObject classDiagramObject = (ClassDiagramObject) umlObject;
+            NoteView noteView = classDiagramObject.noteView;
             if (noteView != null) {
                 deleteNote(noteView);
+            }
+            for (Relationship relationship : classDiagramObject.relationships) {
+                removeDrawing(relationship.path);
+                relationships.remove(relationship);
+                ClassDiagramObject other = relationship.src == classDiagramObject ? relationship.dst : relationship.src;
+                other.removeRelationship(relationship);
             }
         }
         umlObjects.remove(umlObject);
@@ -643,7 +648,9 @@ public class DrawingView extends ViewGroup {
 
     private void removeDrawing(Path path) {
         relPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        relPaint.setStrokeWidth(STROKE_WIDTH * 2);
         relCanvas.drawPath(path, relPaint);
+        relPaint.setStrokeWidth(STROKE_WIDTH);
         relPaint.setXfermode(null);
     }
 
@@ -719,7 +726,7 @@ public class DrawingView extends ViewGroup {
     }
 
     private void addRelationship(Relationship relationship) {
-        drawCanvas.drawPath(relationship.path, relPaint);
+        relCanvas.drawPath(relationship.path, relPaint);
         relationship.src.addRelationship(relationship);
         relationship.dst.addRelationship(relationship);
         relationships.add(relationship);
@@ -1021,6 +1028,11 @@ public class DrawingView extends ViewGroup {
                 if (action.isUMLObject) {
                     umlObjects.add(action.umlObject);
                     addView(action.umlObject.view);
+                    if (action.umlObject instanceof ClassDiagramObject) {
+                        for (Relationship relationship : ((ClassDiagramObject) action.umlObject).relationships) {
+                            addRelationship(relationship);
+                        }
+                    }
                 }
                 if (action.noteView != null) {
                     notes.add(action.noteView);

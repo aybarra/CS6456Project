@@ -2,7 +2,6 @@ package hcay.pui.com.umlapp;
 
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.util.Log;
 
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.Size;
