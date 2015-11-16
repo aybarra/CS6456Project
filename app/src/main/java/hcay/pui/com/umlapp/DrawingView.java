@@ -402,14 +402,16 @@ public class DrawingView extends ViewGroup {
 
     private void offsetPath(float dx, float dy) {
         drawPath.rewind();
-        drawPath.moveTo((float) points.get(0).x, (float) points.get(0).y);
-        for (int i = 1; i < points.size(); i++) {
-            Point p = points.get(i);
-            p.x += dx;
-            p.y += dy;
-            drawPath.lineTo((float) p.x, (float) p.y);
+        if(!points.isEmpty()) {
+            drawPath.moveTo((float) points.get(0).x, (float) points.get(0).y);
+            for (int i = 1; i < points.size(); i++) {
+                Point p = points.get(i);
+                p.x += dx;
+                p.y += dy;
+                drawPath.lineTo((float) p.x, (float) p.y);
+            }
+            drawPath.close();
         }
-        drawPath.close();
     }
 
     private void performSelection() {

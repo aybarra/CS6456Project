@@ -2,13 +2,6 @@ package hcay.pui.com.umlapp;
 
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import hcay.pui.com.recognizer.Gesture;
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.Size;
 

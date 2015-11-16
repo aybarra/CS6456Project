@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.util.Log;
 import android.util.TypedValue;
 
@@ -212,6 +213,40 @@ public class DecoratorUtil {
         return tuple.segPath;
     }
 
+    public static Path drawSemiCircle(SegmentTuple tuple, GestureOrientation orientation) {
+
+        android.graphics.Point start = tuple.lastPoint;
+        int SEMI_CIRCLE_DISPLACEMENT = DISPLACEMENT*11/2;
+        switch(orientation){
+            case LEFT_TO_RIGHT:
+                // scoot to the right by SEMI_CIRCLE DISPLACEMENT
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x+SEMI_CIRCLE_DISPLACEMENT, start.y);
+                tuple.segPath.addArc(new RectF(start.x+SEMI_CIRCLE_DISPLACEMENT, start.y-PADDING/2, start.x+PADDING+SEMI_CIRCLE_DISPLACEMENT, start.y+PADDING/2), 90, 180) ;
+                break;
+            case RIGHT_TO_LEFT:
+                // scoot to the left by SEMI_CIRCLE DISPLACEMENT
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x-SEMI_CIRCLE_DISPLACEMENT, start.y);
+                tuple.segPath.addArc(new RectF(start.x - PADDING - SEMI_CIRCLE_DISPLACEMENT, start.y - PADDING / 2, start.x - SEMI_CIRCLE_DISPLACEMENT, start.y + PADDING / 2), -90, 180) ;
+                break;
+            case TOP_TO_BOTTOM:
+                // scoot down by SEMI_CIRCLE DISPLACEMENT
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x, start.y+SEMI_CIRCLE_DISPLACEMENT);
+                tuple.segPath.addArc(new RectF(start.x - PADDING/2, start.y+SEMI_CIRCLE_DISPLACEMENT, start.x + PADDING/2,start.y+PADDING+SEMI_CIRCLE_DISPLACEMENT), 180, 180);
+                break;
+            case BOTTOM_TO_TOP:
+                // scoot up by SEMI_CIRCLE DISPLACEMENT
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x, start.y - SEMI_CIRCLE_DISPLACEMENT);
+                tuple.segPath.addArc(new RectF(start.x - PADDING/2, start.y-PADDING-SEMI_CIRCLE_DISPLACEMENT, start.x + PADDING/2,start.y-SEMI_CIRCLE_DISPLACEMENT), 0, 180);
+                break;
+        }
+
+        return tuple.segPath;
+    }
+
     public static SegmentTuple drawLineSegments(ClassDiagramObject cdoSrc,
                                                           ClassDiagramObject cdoDst,
                                                           GestureOrientation orientation,
@@ -318,6 +353,8 @@ public class DecoratorUtil {
         return new SegmentTuple(segmentPath, s3End);
     }
 
+
+
     /**
      *
      * @param tuple
@@ -329,8 +366,10 @@ public class DecoratorUtil {
         Path fullPath = null;
         switch(gesture){
             case NAVIGABLE:
-                fullPath = DecoratorUtil.drawDiamond(tuple, orientation);
-                //DecoratorUtil.drawArrow(start, canvas, orientation, paint);
+
+                fullPath = DecoratorUtil.drawArrow(tuple, orientation);
+                // FOR TESTING
+//                fullPath = DecoratorUtil.drawDiamond(tuple, orientation);
                 break;
             case AGGREGATION:
                 // Looks like a diamond
@@ -347,11 +386,16 @@ public class DecoratorUtil {
             case COMPOSITION:
                 fullPath = DecoratorUtil.drawDiamond(tuple, orientation);
                 break;
-            case DEPENDENCY:
-                break;
             case REQUIRED:
+                fullPath = DecoratorUtil.drawSemiCircle(tuple, orientation);
                 break;
+            // Requires a dashed line, with arrow
+            case DEPENDENCY:
+                fullPath = DecoratorUtil.drawArrow(tuple, orientation);
+                break;
+            // Requires a dashed line, with triangle
             case REALIZATION_DEPENDENCY:
+                fullPath = DecoratorUtil.drawTriangle(tuple, orientation);
                 break;
         }
         return fullPath;
