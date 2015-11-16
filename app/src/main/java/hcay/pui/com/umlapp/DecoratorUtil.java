@@ -83,6 +83,91 @@ public class DecoratorUtil {
         return tuple.segPath;
     }
 
+    /**
+     * Only want the path for the arrow
+     * @param start
+     * @param orientation
+     */
+    public static Path getArrow(Point start, GestureOrientation orientation){
+        android.graphics.Point a = start;
+        android.graphics.Point b = null;
+        android.graphics.Point c = null;
+        android.graphics.Point d = null;
+        if(orientation == GestureOrientation.LEFT_TO_RIGHT){
+            b = new android.graphics.Point((start.x + PADDING), start.y);
+            c = new android.graphics.Point((b.x - DISPLACEMENT*4), start.y-DISPLACEMENT*2);
+            d = new android.graphics.Point(c.x, (start.y+DISPLACEMENT*2));
+        } else if(orientation == GestureOrientation.RIGHT_TO_LEFT){
+            b = new android.graphics.Point((start.x - PADDING), start.y);
+            c = new android.graphics.Point((b.x + DISPLACEMENT*4), start.y-DISPLACEMENT*2);
+            d = new android.graphics.Point(c.x, (start.y+DISPLACEMENT*2));
+        } else if(orientation == GestureOrientation.TOP_TO_BOTTOM){
+            b = new android.graphics.Point(start.x, start.y + PADDING);
+            c = new android.graphics.Point(start.x-DISPLACEMENT*2, (b.y - DISPLACEMENT*4));
+            d = new android.graphics.Point(start.x+DISPLACEMENT*2, c.y);
+        } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
+            b = new android.graphics.Point(start.x, start.y - PADDING);
+            c = new android.graphics.Point(start.x-DISPLACEMENT*2, (b.y + DISPLACEMENT*4));
+            d = new android.graphics.Point(start.x+DISPLACEMENT*2, c.y);
+        }
+
+        Path path = new Path();
+        path.setFillType(Path.FillType.EVEN_ODD);
+        path.moveTo(a.x, a.y);
+        path.lineTo(b.x, b.y);
+        path.moveTo(b.x, b.y);
+        path.lineTo(c.x, c.y);
+        path.moveTo(b.x, b.y);
+        path.lineTo(d.x, d.y);
+
+        return path;
+    }
+
+    public static Path getTriangle(Point start, GestureOrientation orientation){
+        android.graphics.Point a = start;
+        android.graphics.Point b = null;
+        android.graphics.Point c = null;
+        android.graphics.Point d = null;
+        android.graphics.Point e = null;
+        if(orientation == GestureOrientation.LEFT_TO_RIGHT){
+            b = new android.graphics.Point((start.x)+DISPLACEMENT*2, start.y);
+            c = new android.graphics.Point(b.x, start.y-DISPLACEMENT*6);
+            d = new android.graphics.Point(start.x + PADDING, start.y);
+            e = new android.graphics.Point(b.x, (start.y+DISPLACEMENT*6));
+        } else if(orientation == GestureOrientation.RIGHT_TO_LEFT){
+            b = new android.graphics.Point((start.x)-DISPLACEMENT*2, start.y);
+            c = new android.graphics.Point(b.x, start.y+DISPLACEMENT*6);
+            d = new android.graphics.Point(start.x - PADDING, start.y);
+            e = new android.graphics.Point(b.x, (start.y-DISPLACEMENT*6));
+        } else if(orientation == GestureOrientation.TOP_TO_BOTTOM){
+            b = new android.graphics.Point((start.x), start.y+DISPLACEMENT*2);
+            c = new android.graphics.Point(start.x+DISPLACEMENT*6, b.y);
+            d = new android.graphics.Point(start.x, start.y+PADDING);
+            e = new android.graphics.Point(start.x-DISPLACEMENT*6, b.y);
+        } else if(orientation == GestureOrientation.BOTTOM_TO_TOP){
+            b = new android.graphics.Point((start.x), start.y-DISPLACEMENT*2);
+            c = new android.graphics.Point(start.x+DISPLACEMENT*6, b.y);
+            d = new android.graphics.Point(start.x, start.y-PADDING);
+            e = new android.graphics.Point(start.x-DISPLACEMENT*6, b.y);
+        }
+
+        Path path = new Path();
+        path.setFillType(Path.FillType.EVEN_ODD);
+        path.moveTo(a.x, a.y);
+        path.lineTo(b.x, b.y);
+        path.moveTo(b.x, b.y);
+        path.lineTo(c.x, c.y);
+        path.moveTo(c.x, c.y);
+        path.lineTo(d.x, d.y);
+        path.moveTo(d.x, d.y);
+        path.lineTo(e.x, e.y);
+        path.moveTo(e.x, e.y);
+        path.lineTo(b.x, b.y);
+
+        return path;
+    }
+
+
     public static Path drawDiamond(SegmentTuple tuple, GestureOrientation orientation){
         android.graphics.Point start = tuple.lastPoint;
 //        float old = mPaint.getStrokeWidth();
@@ -234,18 +319,42 @@ public class DecoratorUtil {
                 // scoot down by SEMI_CIRCLE DISPLACEMENT
                 tuple.segPath.moveTo(start.x, start.y);
                 tuple.segPath.lineTo(start.x, start.y+SEMI_CIRCLE_DISPLACEMENT);
-                tuple.segPath.addArc(new RectF(start.x - PADDING/2, start.y+SEMI_CIRCLE_DISPLACEMENT, start.x + PADDING/2,start.y+PADDING+SEMI_CIRCLE_DISPLACEMENT), 180, 180);
+                tuple.segPath.addArc(new RectF(start.x - PADDING / 2, start.y + SEMI_CIRCLE_DISPLACEMENT, start.x + PADDING / 2, start.y + PADDING + SEMI_CIRCLE_DISPLACEMENT), 180, 180);
                 break;
             case BOTTOM_TO_TOP:
                 // scoot up by SEMI_CIRCLE DISPLACEMENT
                 tuple.segPath.moveTo(start.x, start.y);
                 tuple.segPath.lineTo(start.x, start.y - SEMI_CIRCLE_DISPLACEMENT);
-                tuple.segPath.addArc(new RectF(start.x - PADDING/2, start.y-PADDING-SEMI_CIRCLE_DISPLACEMENT, start.x + PADDING/2,start.y-SEMI_CIRCLE_DISPLACEMENT), 0, 180);
+                tuple.segPath.addArc(new RectF(start.x - PADDING / 2, start.y - PADDING - SEMI_CIRCLE_DISPLACEMENT, start.x + PADDING / 2, start.y - SEMI_CIRCLE_DISPLACEMENT), 0, 180);
                 break;
         }
 
         return tuple.segPath;
     }
+
+    public static Path drawLine(SegmentTuple tuple, GestureOrientation orientation){
+        Point start = tuple.lastPoint;
+        switch(orientation){
+            case LEFT_TO_RIGHT:
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x + PADDING, start.y);
+                break;
+            case RIGHT_TO_LEFT:
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x - PADDING, start.y);
+                break;
+            case TOP_TO_BOTTOM:
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x , start.y + PADDING);
+                break;
+            case BOTTOM_TO_TOP:
+                tuple.segPath.moveTo(start.x, start.y);
+                tuple.segPath.lineTo(start.x, start.y - PADDING);
+                break;
+        }
+        return tuple.segPath;
+    }
+
 
     public static SegmentTuple drawLineSegments(ClassDiagramObject cdoSrc,
                                                           ClassDiagramObject cdoDst,
@@ -366,9 +475,8 @@ public class DecoratorUtil {
         Path fullPath = null;
         switch(gesture){
             case NAVIGABLE:
-
                 fullPath = DecoratorUtil.drawArrow(tuple, orientation);
-                // FOR TESTING
+                // FOR TESTING OVERWRITE THIS ONE SINCE ITS EASY TO PERFORM
 //                fullPath = DecoratorUtil.drawDiamond(tuple, orientation);
                 break;
             case AGGREGATION:
@@ -389,13 +497,8 @@ public class DecoratorUtil {
             case REQUIRED:
                 fullPath = DecoratorUtil.drawSemiCircle(tuple, orientation);
                 break;
-            // Requires a dashed line, with arrow
-            case DEPENDENCY:
-                fullPath = DecoratorUtil.drawArrow(tuple, orientation);
-                break;
-            // Requires a dashed line, with triangle
-            case REALIZATION_DEPENDENCY:
-                fullPath = DecoratorUtil.drawTriangle(tuple, orientation);
+            case UNSPECIFIED:
+                fullPath = DecoratorUtil.drawLine(tuple, orientation);
                 break;
         }
         return fullPath;

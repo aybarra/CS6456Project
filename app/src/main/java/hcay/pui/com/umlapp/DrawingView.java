@@ -54,7 +54,7 @@ public class DrawingView extends ViewGroup {
     // drawing path
     private Path drawPath;
     // drawing and canvas paint
-    private Paint drawPaint, canvasPaint, relPaint;
+    private Paint drawPaint, canvasPaint, relPaint, relDashedPaint;
     // initial color
     private int paintColor = 0xFF660000;
     // canvas
@@ -160,9 +160,11 @@ public class DrawingView extends ViewGroup {
         drawPath = new Path();
         drawPaint = new Paint();
         relPaint = new Paint();
+        relDashedPaint = new Paint();
 
         drawPaint.setColor(paintColor);
         relPaint.setColor(paintColor);
+        relDashedPaint.setColor(paintColor);
 
         drawPaint.setAntiAlias(true);
         drawPaint.setStrokeWidth(brushSize);
@@ -174,6 +176,13 @@ public class DrawingView extends ViewGroup {
         relPaint.setStyle(Paint.Style.STROKE);
         relPaint.setStrokeJoin(Paint.Join.ROUND);
         relPaint.setStrokeCap(Paint.Cap.ROUND);
+        relDashedPaint.setAntiAlias(true);
+        relDashedPaint.setStrokeWidth(STROKE_WIDTH);
+        relDashedPaint.setStyle(Paint.Style.STROKE);
+        relDashedPaint.setStrokeJoin(Paint.Join.ROUND);
+        relDashedPaint.setStrokeCap(Paint.Cap.ROUND);
+        relDashedPaint.setPathEffect(dashEffect);
+
         canvasPaint = new Paint(Paint.DITHER_FLAG);
 
         brushSize = getResources().getInteger(R.integer.medium_size);
@@ -740,7 +749,8 @@ public class DrawingView extends ViewGroup {
         } else if(result.gesture == Gesture.NAVIGABLE || result.gesture == Gesture.AGGREGATION
                 || result.gesture == Gesture.GENERALIZATION || result.gesture == Gesture.REALIZATION
                 || result.gesture == Gesture.COMPOSITION || result.gesture == Gesture.DEPENDENCY
-                || result.gesture == Gesture.REALIZATION_DEPENDENCY || result.gesture == Gesture.REQUIRED) {
+                || result.gesture == Gesture.REALIZATION_DEPENDENCY || result.gesture == Gesture.REQUIRED
+                || result.gesture == Gesture.UNSPECIFIED) {
 
             // Determine the orientation and direction its pointing
             GestureOrientation orientation = OrientLocUtil.getGestureOrientation(bounds);
@@ -798,8 +808,21 @@ public class DrawingView extends ViewGroup {
             SegmentTuple tuple = DecoratorUtil.drawLineSegments(objectSrc, objectDst, orientation, relationshipSize, relPaint, relCanvas);
             Log.i(TAG, "The size of path is: " + tuple.segPath.toString() + " last point is: " + tuple.lastPoint);
 
-            Path fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation);
-            relCanvas.drawPath(fullPath, relPaint);
+            Path fullPath = tuple.segPath;
+            if(result.gesture == Gesture.DEPENDENCY){
+                relCanvas.drawPath(tuple.segPath, relDashedPaint);
+                Path arrowhead = DecoratorUtil.getArrow(tuple.lastPoint, orientation);
+                relCanvas.drawPath(arrowhead, relPaint);
+                fullPath.addPath(arrowhead);
+            } else if(result.gesture == Gesture.REALIZATION_DEPENDENCY){
+                relCanvas.drawPath(tuple.segPath, relDashedPaint);
+                Path triangle = DecoratorUtil.getTriangle(tuple.lastPoint, orientation);
+                relCanvas.drawPath(triangle, relPaint);
+                fullPath.addPath(triangle);
+            } else {
+                fullPath = DecoratorUtil.addDecorator(tuple, result.gesture, orientation);
+                relCanvas.drawPath(fullPath, relPaint);
+            }
             Point origin = OrientLocUtil.getGestureOriginPoint(objectSrc, objectDst, orientation);
             Relationship relationship = new Relationship(relationshipSize, origin, fullPath, objectSrc, objectDst);
             objectSrc.addRelationship(relationship);
