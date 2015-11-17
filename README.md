@@ -1,2 +1,2 @@
 # CS6456Project
-Project for Keith's Class.....the Gesture-based UML Diagramming App
+A Gesture-based UML Diagramming App for CS6456: Principles of User Interface Software
