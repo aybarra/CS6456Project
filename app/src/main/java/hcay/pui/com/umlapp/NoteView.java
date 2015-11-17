@@ -5,7 +5,10 @@ import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
 /**
- * Created by Dennis on 11/12/15.
+ * View class for note views.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class NoteView extends LinearLayout {
 

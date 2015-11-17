@@ -3,7 +3,10 @@ package hcay.pui.com.umlapp;
 import hcay.pui.com.recognizer.Gesture;
 
 /**
- * Created by andrasta on 11/12/15.
+ * Object containing information about each relationship.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class RelationshipObject extends UMLObject {
 

@@ -2,14 +2,13 @@ package hcay.pui.com.umlapp;
 
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.Size;
 
 /**
- * Created by andrasta on 11/7/15.
+ * Represents any UML element object to be drawn on the canvas.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class UMLObject {
     public View view;

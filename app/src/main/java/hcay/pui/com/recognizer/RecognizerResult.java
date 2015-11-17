@@ -1,5 +1,11 @@
 package hcay.pui.com.recognizer;
 
+/**
+ * RecognizerResult class containing information about a recognition result.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 public class RecognizerResult implements Comparable<RecognizerResult> {
 
     public Gesture gesture;

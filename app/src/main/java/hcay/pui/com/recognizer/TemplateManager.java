@@ -16,6 +16,12 @@ import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.*;
 
+/**
+ * Manages saving and loading operations of templates.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 public class TemplateManager {
 
 	private static final String TEMPLATE_FILE_NAME = "templates.g";

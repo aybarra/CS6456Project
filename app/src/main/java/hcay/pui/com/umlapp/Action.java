@@ -3,7 +3,10 @@ package hcay.pui.com.umlapp;
 import java.util.ArrayList;
 
 /**
- * Created by Dennis on 11/13/15.
+ * Contains information about a user-triggered action.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class Action {
     public ActionType type = ActionType.NONE;

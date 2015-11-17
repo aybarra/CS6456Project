@@ -12,6 +12,12 @@ import android.widget.Toast;
 
 import hcay.pui.com.recognizer.TemplateManager;
 
+/**
+ * MainActivity for the application.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private DrawingView drawView;

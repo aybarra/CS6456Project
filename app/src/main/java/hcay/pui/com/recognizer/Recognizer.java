@@ -1,11 +1,17 @@
 package hcay.pui.com.recognizer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Gesture recognizer class that interprets gestures/shapes using templates.
+ * Based on the $P recognizer.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 public class Recognizer {
 
     /** Number of points to use for the re-sampled path. */

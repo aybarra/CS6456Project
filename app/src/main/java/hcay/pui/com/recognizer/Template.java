@@ -2,6 +2,12 @@ package hcay.pui.com.recognizer;
 
 import java.util.ArrayList;
 
+/**
+ * Template class with the corresponding gesture and template points.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 public class Template {
 
     public Gesture gesture;

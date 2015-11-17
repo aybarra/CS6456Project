@@ -7,7 +7,10 @@ import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.Size;
 
 /**
- * Created by Dennis on 11/15/15.
+ * Contains information about relationships.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class Relationship {
     public Size size;

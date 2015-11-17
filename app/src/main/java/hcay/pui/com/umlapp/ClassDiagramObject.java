@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by andrasta on 11/12/15.
+ * Represents a classifier drawn on a canvas.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class ClassDiagramObject extends UMLObject {
 

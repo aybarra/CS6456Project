@@ -5,17 +5,15 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.RectF;
-import android.util.Log;
-import android.util.TypedValue;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import hcay.pui.com.recognizer.Gesture;
 import hcay.pui.com.recognizer.Size;
 
 /**
- * Created by andrasta on 11/13/15.
+ * Util for drawing decorators for relationships.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class DecoratorUtil {
 

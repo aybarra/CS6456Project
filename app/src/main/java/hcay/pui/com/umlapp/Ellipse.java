@@ -8,7 +8,10 @@ import java.util.List;
 import hcay.pui.com.recognizer.Point;
 
 /**
- * Created by Dennis on 11/13/15.
+ * Represents an ellipse shape, to be used to determine the bounding region of a user-drawn selection.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class Ellipse {
     private float x, y, width, height;

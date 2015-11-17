@@ -46,7 +46,10 @@ import hcay.pui.com.recognizer.Size;
 import hcay.pui.com.recognizer.TemplateManager;
 
 /**
+ * Main ViewGroup with the canvas for the user to draw a diagram.
+ *
  * @author Andy Ybarra
+ * @author Hyun Seo Chung
  */
 public class DrawingView extends ViewGroup {
 

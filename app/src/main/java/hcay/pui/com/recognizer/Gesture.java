@@ -1,5 +1,11 @@
 package hcay.pui.com.recognizer;
 
+/**
+ * Gesture enum for all the supported gestures.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 public enum Gesture {
 
     NAVIGABLE("navigable", "-->", true), BI_NAVIGABLE("bi_navigable", "<->", true), CLASSIFIER("classifier", "[]", true), GENERALIZATION("generalization", "--|>", true),

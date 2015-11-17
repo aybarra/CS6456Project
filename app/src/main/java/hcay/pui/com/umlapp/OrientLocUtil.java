@@ -1,12 +1,13 @@
 package hcay.pui.com.umlapp;
 
-import android.util.Log;
-
 import hcay.pui.com.recognizer.Point;
 import hcay.pui.com.recognizer.Size;
 
 /**
- * Created by andrasta on 11/13/15.
+ * Util for determining the orientation of relationships.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class OrientLocUtil {
 

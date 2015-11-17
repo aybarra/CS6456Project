@@ -1,5 +1,11 @@
 package hcay.pui.com.recognizer;
 
+/**
+ * Point class containing x, y coordinates, along with an optional strokeID to be used for the recognizer.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 public class Point {
 
     public double x, y;

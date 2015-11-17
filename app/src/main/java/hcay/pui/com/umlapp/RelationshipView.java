@@ -5,22 +5,14 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-
-import java.util.ArrayList;
-
-import hcay.pui.com.recognizer.Gesture;
-import hcay.pui.com.recognizer.Point;
-import hcay.pui.com.recognizer.Size;
 
 /**
- * Created by andrasta on 11/7/15.
+ * View for relationships.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class RelationshipView extends View {
 

@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import at.markushi.ui.CircleButton;
 
 /**
+ * View for classifiers (ClassDiagramObject).
+ *
  * @author Andy Ybarra
  * @author Hyun Seo Chung
  */
@@ -40,7 +42,6 @@ public class ClassDiagramView extends LinearLayout {
 
     public ClassDiagramView(Context context){
         super(context);
-//        init(context);
     }
 
     public void init(Context context){

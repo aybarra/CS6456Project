@@ -13,7 +13,10 @@ import android.widget.EditText;
 import java.util.List;
 
 /**
- * Created by andrasta on 11/8/15.
+ * ArrayAdapter to be used for the classifiers' listviews.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class FeatureAdapter extends ArrayAdapter<Feature> {
     public List<Feature> featureList;
@@ -100,6 +103,12 @@ public class FeatureAdapter extends ArrayAdapter<Feature> {
     }
 }
 
+/**
+ * Feature object for the FeatureAdapter list.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
+ */
 class Feature {
     public String featureName;
     public Feature(String value) {

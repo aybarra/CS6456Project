@@ -1,7 +1,10 @@
 package hcay.pui.com.recognizer;
 
 /**
- * Created by andrasta on 11/3/15.
+ * Size class containing the width and height information.
+ *
+ * @author Hyun Seo Chung
+ * @author Andy Ybarra
  */
 public class Size {
     private int width;
