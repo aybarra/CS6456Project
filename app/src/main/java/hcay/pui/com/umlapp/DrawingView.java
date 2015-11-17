@@ -152,6 +152,7 @@ public class DrawingView extends ViewGroup {
                     ((ClassDiagramObject) umlObject).noteView.setVisibility(isViewMode ? GONE : VISIBLE);
             }
         }
+        postInvalidateDelayed(1);   // work-around for 4.4 bug
         MainActivity.viewItem.getIcon().setAlpha(isViewMode ? 255 : 200);
     }
 
